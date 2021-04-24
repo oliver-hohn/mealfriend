@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"main/models"
 	"math/rand"
 	"os"
 	"sort"
@@ -10,53 +11,8 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
-type IngredientType int
-
-const (
-	Meat    = iota
-	Chicken = iota
-	Fish    = iota
-	Other   = iota
-)
-
-func (i IngredientType) getName() string {
-	switch i {
-	case Meat:
-		return "Meat"
-	case Chicken:
-		return "Chicken"
-	case Fish:
-		return "Fish"
-	case Other:
-		return "Other"
-	default:
-		return "N/A"
-	}
-}
-
-type Ingredient struct {
-	Amount uint32
-	Name   string
-	Type   IngredientType
-}
-
-type Recipe struct {
-	Name        string
-	Ingredients []Ingredient
-}
-
-func (r *Recipe) HasIngredient(i IngredientType) bool {
-	for _, ingredient := range r.Ingredients {
-		if ingredient.Type == i {
-			return true
-		}
-	}
-
-	return false
-}
-
 type Rule struct {
-	Type   IngredientType
+	Type   models.IngredientType
 	Amount uint32
 }
 
@@ -70,97 +26,97 @@ func main() {
 
 	recipes, err := getRecipes()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to get recipes: %w", err)
+		fmt.Fprintf(os.Stderr, "Failed to get recipes: %v", err)
 		os.Exit(1)
 	}
 
 	diet, err := getDiet()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to get diet: %w", err)
+		fmt.Fprintf(os.Stderr, "Failed to get diet: %v", err)
 		os.Exit(1)
 	}
 
 	schedule, err := generateSchedule(recipes, diet)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to get schedule: %w", err)
+		fmt.Fprintf(os.Stderr, "Failed to get schedule: %v", err)
 		os.Exit(1)
 	}
 
 	prettyPrintSchedule(schedule)
 }
 
-func getRecipes() ([]Recipe, error) {
-	recipes := []Recipe{
+func getRecipes() ([]models.Recipe, error) {
+	recipes := []models.Recipe{
 		{
 			Name: "Chicken Pasta Bake",
-			Ingredients: []Ingredient{
+			Ingredients: []models.Ingredient{
 				{
 					Name: "Rigatonni Pasta",
-					Type: Other,
+					Type: models.Other,
 				},
 				{
 					Name: "Chicken Thigs",
-					Type: Chicken,
+					Type: models.Chicken,
 				},
 				{
 					Name: "Bacon",
-					Type: Meat,
+					Type: models.Meat,
 				},
 			},
 		},
 		{
 			Name: "Lasagna",
-			Ingredients: []Ingredient{
+			Ingredients: []models.Ingredient{
 				{
 					Name: "Beef Mince",
-					Type: Meat,
+					Type: models.Meat,
 				},
 				{
 					Name: "Lasagne Sheets",
-					Type: Other,
+					Type: models.Other,
 				},
 			},
 		},
 		{
 			Name: "Quesadillas",
-			Ingredients: []Ingredient{
+			Ingredients: []models.Ingredient{
 				{
 					Name: "Beef Mince",
-					Type: Meat,
+					Type: models.Meat,
 				},
 				{
 					Name: "Tortillas",
-					Type: Other,
+					Type: models.Other,
 				},
 			},
 		},
 		{
 			Name: "Moqueca",
-			Ingredients: []Ingredient{
+			Ingredients: []models.Ingredient{
 				{
 					Name: "White Fish (Halibut, Black Cod, Sea Bass, Cod)",
-					Type: Fish,
+					Type: models.Fish,
 				},
 				{
 					Name: "Coconut Milk",
-					Type: Other,
+					Type: models.Other,
 				},
 			},
 		},
 		{
 			Name: "Fish Risotto",
-			Ingredients: []Ingredient{
+			Ingredients: []models.Ingredient{
 				{
 					Name: "Prawns",
-					Type: Fish,
+					Type: models.Fish,
 				},
 				{
 					Name: "Mussels",
-					Type: Fish,
+					Type: models.Fish,
 				},
 				{
 					Name: "Risotto Rice",
-					Type: Other,
+					Type: models.Other,
 				},
 			},
 		},
@@ -174,15 +130,15 @@ func getDiet() (*Diet, error) {
 		NumberOfDays: 3,
 		Rules: []Rule{
 			{
-				Type:   Meat,
+				Type:   models.Meat,
 				Amount: 1,
 			},
 			{
-				Type:   Fish,
+				Type:   models.Fish,
 				Amount: 1,
 			},
 			{
-				Type:   Chicken,
+				Type:   models.Chicken,
 				Amount: 1,
 			},
 		},
@@ -191,8 +147,8 @@ func getDiet() (*Diet, error) {
 	return diet, nil
 }
 
-func generateSchedule(recipes []Recipe, diet *Diet) (map[string]*Recipe, error) {
-	recipesByDay := map[string]*Recipe{}
+func generateSchedule(recipes []models.Recipe, diet *Diet) (map[string]*models.Recipe, error) {
+	recipesByDay := map[string]*models.Recipe{}
 
 	for i, rule := range diet.Rules {
 		recipe, err := getRandomRecipeWith(rule.Type, recipes)
@@ -206,7 +162,7 @@ func generateSchedule(recipes []Recipe, diet *Diet) (map[string]*Recipe, error) 
 	return recipesByDay, nil
 }
 
-func getRandomRecipeWith(i IngredientType, r []Recipe) (*Recipe, error) {
+func getRandomRecipeWith(i models.IngredientType, r []models.Recipe) (*models.Recipe, error) {
 	rand.Shuffle(len(r), func(a, b int) { r[a], r[b] = r[b], r[a] })
 
 	for _, recipe := range r {
@@ -215,7 +171,7 @@ func getRandomRecipeWith(i IngredientType, r []Recipe) (*Recipe, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("unable to find Recipe with Ingredient: %v", i.getName())
+	return nil, fmt.Errorf("unable to find Recipe with Ingredient: %v", i.GetName())
 }
 
 type byDay [][]string
@@ -226,7 +182,7 @@ func (d byDay) Less(i, j int) bool {
 	return d[i][0] < d[j][0]
 }
 
-func prettyPrintSchedule(s map[string]*Recipe) {
+func prettyPrintSchedule(s map[string]*models.Recipe) {
 	data := [][]string{}
 
 	for day, recipe := range s {
