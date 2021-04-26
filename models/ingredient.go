@@ -3,10 +3,10 @@ package models
 type IngredientType int
 
 const (
-	Meat    = iota
-	Chicken = iota
-	Fish    = iota
-	Other   = iota
+	Meat = iota + 1
+	Chicken
+	Fish
+	Other
 )
 
 func (i IngredientType) GetName() string {
@@ -25,7 +25,7 @@ func (i IngredientType) GetName() string {
 }
 
 type Ingredient struct {
-	Amount uint32
+	Amount uint64
 	Name   string
 	Type   IngredientType
 }
