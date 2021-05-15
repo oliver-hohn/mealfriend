@@ -39,11 +39,7 @@ func (s *ScraperClient) scrapeFromCafeDelites(u *url.URL) (*models.Recipe, error
 	})
 
 	doc.Find(".wprm-recipe-ingredients > .wprm-recipe-ingredient").Each(func(i int, s *goquery.Selection) {
-		ingredient := models.Ingredient{
-			Name: s.Text(),
-		}
-
-		recipe.Ingredients = append(recipe.Ingredients, ingredient)
+		recipe.Ingredients = append(recipe.Ingredients, models.NewIngredient(s.Text()))
 	})
 
 	return &recipe, nil

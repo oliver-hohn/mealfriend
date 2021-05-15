@@ -8,7 +8,6 @@ import (
 	"main/scrapers"
 	"net/url"
 	"os"
-	"strconv"
 
 	"github.com/olekukonko/tablewriter"
 )
@@ -40,11 +39,11 @@ func prettyPrintRecipe(r *models.Recipe) {
 	fmt.Printf("Title: %s\n", r.Name)
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Name", "Type", "Amount"})
+	table.SetHeader([]string{"Name", "Type", "Quantity"})
 
 	for _, i := range r.Ingredients {
 		table.Append([]string{
-			i.Name, i.Type.GetName(), strconv.FormatUint(i.Amount, 10),
+			i.Name, i.Type.GetName(), fmt.Sprintf("%s %s", i.Quantity.Amount, i.Quantity.Unit),
 		})
 	}
 	table.Render()
