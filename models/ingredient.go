@@ -42,7 +42,7 @@ type Ingredient struct {
 }
 
 var quantityRegex = regexp.MustCompile(
-	`(?i)(?P<amount>\d+\s*/\s*\d+|\d+\s*\-\s*\d+|\d+)\s*(?P<unit>g|mg|kg|oz|cup(s)?|leg(s)?)?(?P<description>.*)`, // hell-regex
+	`(?i)(?P<amount>\d+\s*/\s*\d+|\d+\s*\-\s*\d+|\d+)\s*(?P<unit>g|mg|kg|oz|cup(s)?|leg(s)?|lb|teaspoon(s)?|tablespoon(s)?)?(?P<description>.*)`, // hell-regex
 )
 
 var quantityIndexByGroup = utils.MustMapGroupToIndex(quantityRegex)
