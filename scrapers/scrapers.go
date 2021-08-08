@@ -26,6 +26,8 @@ func (s *ScraperClient) Run(u *url.URL) (*models.Recipe, error) {
 	switch u.Hostname() {
 	case CAFE_DELITES_HOST:
 		return s.scrapeFromCafeDelites(u)
+	case TASTY_HOST:
+		return s.scrapeFromTasty(u)
 	default:
 		return nil, fmt.Errorf("unsupported host: %s", u.Hostname())
 	}
