@@ -2,10 +2,10 @@ package scrapers
 
 import (
 	"fmt"
-	"main/models"
 	"net/url"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/oliver-hohn/mealfriend/models"
 )
 
 const CAFE_DELITES_HOST = "cafedelites.com"

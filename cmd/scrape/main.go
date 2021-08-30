@@ -4,12 +4,12 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"main/models"
-	"main/scrapers"
 	"net/url"
 	"os"
 
 	"github.com/olekukonko/tablewriter"
+	"github.com/oliver-hohn/mealfriend/models"
+	"github.com/oliver-hohn/mealfriend/scrapers"
 )
 
 var inputURL = flag.String("input_url", "", "Where to scrape")

@@ -1,4 +1,4 @@
-module main
+module github.com/oliver-hohn/mealfriend
 
 go 1.17
 

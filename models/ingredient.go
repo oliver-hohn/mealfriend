@@ -1,9 +1,10 @@
 package models
 
 import (
-	"main/utils"
 	"regexp"
 	"strings"
+
+	"github.com/oliver-hohn/mealfriend/utils"
 )
 
 type IngredientType int

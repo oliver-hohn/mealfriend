@@ -2,11 +2,11 @@ package scrapers
 
 import (
 	"fmt"
-	"main/models"
 	"net/http"
 	"net/url"
 
 	"github.com/hashicorp/go-retryablehttp"
+	"github.com/oliver-hohn/mealfriend/models"
 )
 
 type ScraperClient struct {

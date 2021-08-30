@@ -2,13 +2,13 @@ package main
 
 import (
 	"fmt"
-	"main/models"
 	"math/rand"
 	"os"
 	"sort"
 	"time"
 
 	"github.com/olekukonko/tablewriter"
+	"github.com/oliver-hohn/mealfriend/models"
 )
 
 type Rule struct {

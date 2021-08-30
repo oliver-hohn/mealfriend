@@ -2,10 +2,10 @@ package scrapers
 
 import (
 	"fmt"
-	"main/models"
 	"net/url"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/oliver-hohn/mealfriend/models"
 )
 
 const TASTY_HOST = "tasty.co"
