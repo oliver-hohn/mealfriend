@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package models;
+
+option go_package = "protos/models";
+
+message Ingredient {
+    enum Type {
+        UNSPECIFIED = 0;
+        BEEF = 1;
+        CHICKEN = 2;
+        PORK = 3;
+        FISH = 4;
+        VEGETABLE = 5;
+    }
+
+    string name = 1;
+    Type type = 2;
+}
+
+message Recipe {
+    string name = 1;
+
+    repeated Ingredient ingredients = 2;
+}
