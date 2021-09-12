@@ -5,6 +5,7 @@ import (
 	"net/url"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/iancoleman/strcase"
 	pbmodels "github.com/oliver-hohn/mealfriend/protos/models"
 	"github.com/oliver-hohn/mealfriend/scrapers/utils"
 )
@@ -37,6 +38,7 @@ func (s *ScraperClient) scrapeFromCafeDelites(u *url.URL) (*pbmodels.Recipe, err
 	}
 	nameSelection.Each(func(i int, s *goquery.Selection) {
 		recipe.Name = s.Text()
+		recipe.Code = strcase.ToCamel(recipe.Name)
 	})
 
 	doc.Find(".wprm-recipe-ingredients > .wprm-recipe-ingredient").Each(func(i int, s *goquery.Selection) {
