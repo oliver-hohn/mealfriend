@@ -8,11 +8,11 @@ import (
 	"time"
 
 	"github.com/olekukonko/tablewriter"
-	"github.com/oliver-hohn/mealfriend/models"
+	pbmodels "github.com/oliver-hohn/mealfriend/protos/models"
 )
 
 type Rule struct {
-	Type   models.IngredientType
+	Type   pbmodels.Ingredient_Type
 	Amount uint32
 }
 
@@ -23,7 +23,6 @@ type Diet struct {
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
-
 	recipes, err := getRecipes()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to get recipes: %v", err)
@@ -45,78 +44,78 @@ func main() {
 	prettyPrintSchedule(schedule)
 }
 
-func getRecipes() ([]models.Recipe, error) {
-	recipes := []models.Recipe{
+func getRecipes() ([]pbmodels.Recipe, error) {
+	recipes := []pbmodels.Recipe{
 		{
 			Name: "Chicken Pasta Bake",
-			Ingredients: []models.Ingredient{
+			Ingredients: []*pbmodels.Ingredient{
 				{
 					Name: "Rigatonni Pasta",
-					Type: models.Other,
+					Type: pbmodels.Ingredient_UNSPECIFIED,
 				},
 				{
 					Name: "Chicken Thigs",
-					Type: models.Chicken,
+					Type: pbmodels.Ingredient_CHICKEN,
 				},
 				{
 					Name: "Bacon",
-					Type: models.Meat,
+					Type: pbmodels.Ingredient_PORK,
 				},
 			},
 		},
 		{
 			Name: "Lasagna",
-			Ingredients: []models.Ingredient{
+			Ingredients: []*pbmodels.Ingredient{
 				{
 					Name: "Beef Mince",
-					Type: models.Meat,
+					Type: pbmodels.Ingredient_BEEF,
 				},
 				{
 					Name: "Lasagne Sheets",
-					Type: models.Other,
+					Type: pbmodels.Ingredient_UNSPECIFIED,
 				},
 			},
 		},
 		{
 			Name: "Quesadillas",
-			Ingredients: []models.Ingredient{
+			Ingredients: []*pbmodels.Ingredient{
 				{
 					Name: "Beef Mince",
-					Type: models.Meat,
+					Type: pbmodels.Ingredient_BEEF,
 				},
 				{
 					Name: "Tortillas",
-					Type: models.Other,
+					Type: pbmodels.Ingredient_UNSPECIFIED,
 				},
 			},
 		},
 		{
 			Name: "Moqueca",
-			Ingredients: []models.Ingredient{
+			Ingredients: []*pbmodels.Ingredient{
 				{
 					Name: "White Fish (Halibut, Black Cod, Sea Bass, Cod)",
-					Type: models.Fish,
+					Type: pbmodels.Ingredient_FISH,
 				},
 				{
 					Name: "Coconut Milk",
-					Type: models.Other,
+					Type: pbmodels.Ingredient_UNSPECIFIED,
 				},
 			},
 		},
 		{
 			Name: "Fish Risotto",
-			Ingredients: []models.Ingredient{
+			Ingredients: []*pbmodels.Ingredient{
 				{
 					Name: "Prawns",
-					Type: models.Fish,
+					Type: pbmodels.Ingredient_FISH,
 				},
 				{
 					Name: "Mussels",
-					Type: models.Fish,
+					Type: pbmodels.Ingredient_FISH,
 				},
 				{
 					Name: "Risotto Rice",
-					Type: models.Other,
+					Type: pbmodels.Ingredient_UNSPECIFIED,
 				},
 			},
 		},
@@ -130,15 +129,15 @@ func getDiet() (*Diet, error) {
 		NumberOfDays: 3,
 		Rules: []Rule{
 			{
-				Type:   models.Meat,
+				Type:   pbmodels.Ingredient_BEEF,
 				Amount: 1,
 			},
 			{
-				Type:   models.Fish,
+				Type:   pbmodels.Ingredient_FISH,
 				Amount: 1,
 			},
 			{
-				Type:   models.Chicken,
+				Type:   pbmodels.Ingredient_CHICKEN,
 				Amount: 1,
 			},
 		},
@@ -147,8 +146,8 @@ func getDiet() (*Diet, error) {
 	return diet, nil
 }
 
-func generateSchedule(recipes []models.Recipe, diet *Diet) (map[string]*models.Recipe, error) {
-	recipesByDay := map[string]*models.Recipe{}
+func generateSchedule(recipes []pbmodels.Recipe, diet *Diet) (map[string]*pbmodels.Recipe, error) {
+	recipesByDay := map[string]*pbmodels.Recipe{}
 
 	for i, rule := range diet.Rules {
 		recipe, err := getRandomRecipeWith(rule.Type, recipes)
@@ -162,16 +161,26 @@ func generateSchedule(recipes []models.Recipe, diet *Diet) (map[string]*models.R
 	return recipesByDay, nil
 }
 
-func getRandomRecipeWith(i models.IngredientType, r []models.Recipe) (*models.Recipe, error) {
+func recipeHasIngredient(r pbmodels.Recipe, i pbmodels.Ingredient_Type) bool {
+	for _, ingredient := range r.GetIngredients() {
+		if ingredient.GetType() == i {
+			return true
+		}
+	}
+
+	return false
+}
+
+func getRandomRecipeWith(i pbmodels.Ingredient_Type, r []pbmodels.Recipe) (*pbmodels.Recipe, error) {
 	rand.Shuffle(len(r), func(a, b int) { r[a], r[b] = r[b], r[a] })
 
 	for _, recipe := range r {
-		if recipe.HasIngredient(i) {
+		if recipeHasIngredient(recipe, i) {
 			return &recipe, nil
 		}
 	}
 
-	return nil, fmt.Errorf("unable to find Recipe with Ingredient: %v", i.GetName())
+	return nil, fmt.Errorf("unable to find Recipe with Ingredient: %v", i.Descriptor().FullName())
 }
 
 type byDay [][]string
@@ -182,7 +191,7 @@ func (d byDay) Less(i, j int) bool {
 	return d[i][0] < d[j][0]
 }
 
-func prettyPrintSchedule(s map[string]*models.Recipe) {
+func prettyPrintSchedule(s map[string]*pbmodels.Recipe) {
 	data := [][]string{}
 
 	for day, recipe := range s {

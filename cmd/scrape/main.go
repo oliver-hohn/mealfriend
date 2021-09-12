@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/olekukonko/tablewriter"
-	"github.com/oliver-hohn/mealfriend/models"
+	pbmodels "github.com/oliver-hohn/mealfriend/protos/models"
 	"github.com/oliver-hohn/mealfriend/scrapers"
 )
 
@@ -35,15 +35,15 @@ func main() {
 	prettyPrintRecipe(r)
 }
 
-func prettyPrintRecipe(r *models.Recipe) {
+func prettyPrintRecipe(r *pbmodels.Recipe) {
 	fmt.Printf("Title: %s\n", r.Name)
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Name", "Type", "Quantity"})
+	table.SetHeader([]string{"Name", "Type"})
 
 	for _, i := range r.Ingredients {
 		table.Append([]string{
-			i.Name, i.Type.GetName(), fmt.Sprintf("%s %s", i.Quantity.Amount, i.Quantity.Unit),
+			i.Name, i.GetType().String(),
 		})
 	}
 	table.Render()

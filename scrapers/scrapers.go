@@ -6,7 +6,7 @@ import (
 	"net/url"
 
 	"github.com/hashicorp/go-retryablehttp"
-	"github.com/oliver-hohn/mealfriend/models"
+	pbmodels "github.com/oliver-hohn/mealfriend/protos/models"
 )
 
 type ScraperClient struct {
@@ -22,7 +22,7 @@ func NewScraperClient() *ScraperClient {
 	}
 }
 
-func (s *ScraperClient) Run(u *url.URL) (*models.Recipe, error) {
+func (s *ScraperClient) Run(u *url.URL) (*pbmodels.Recipe, error) {
 	switch u.Hostname() {
 	case CAFE_DELITES_HOST:
 		return s.scrapeFromCafeDelites(u)

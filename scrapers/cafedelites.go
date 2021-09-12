@@ -5,12 +5,13 @@ import (
 	"net/url"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/oliver-hohn/mealfriend/models"
+	pbmodels "github.com/oliver-hohn/mealfriend/protos/models"
+	"github.com/oliver-hohn/mealfriend/scrapers/utils"
 )
 
 const CAFE_DELITES_HOST = "cafedelites.com"
 
-func (s *ScraperClient) scrapeFromCafeDelites(u *url.URL) (*models.Recipe, error) {
+func (s *ScraperClient) scrapeFromCafeDelites(u *url.URL) (*pbmodels.Recipe, error) {
 	res, err := s.httpClient.Get(u.String())
 	if err != nil {
 		return nil, fmt.Errorf("unable to fetch %s: %w", u.String(), err)
@@ -25,7 +26,7 @@ func (s *ScraperClient) scrapeFromCafeDelites(u *url.URL) (*models.Recipe, error
 		return nil, fmt.Errorf("unable to parse HTML in response: %w", err)
 	}
 
-	recipe := models.Recipe{}
+	recipe := pbmodels.Recipe{}
 
 	// Ensure only one node for the name is found
 	nameSelection := doc.Find(".wprm-recipe-name")
@@ -39,7 +40,7 @@ func (s *ScraperClient) scrapeFromCafeDelites(u *url.URL) (*models.Recipe, error
 	})
 
 	doc.Find(".wprm-recipe-ingredients > .wprm-recipe-ingredient").Each(func(i int, s *goquery.Selection) {
-		recipe.Ingredients = append(recipe.Ingredients, models.NewIngredient(s.Text()))
+		recipe.Ingredients = append(recipe.Ingredients, utils.NewIngredient(s.Text()))
 	})
 
 	return &recipe, nil
