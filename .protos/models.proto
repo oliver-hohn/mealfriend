@@ -20,6 +20,9 @@ message Ingredient {
 
 message Recipe {
     string name = 1;
+    string code = 3;
 
     repeated Ingredient ingredients = 2;
+
+    // NEXT ID: 4
 }
