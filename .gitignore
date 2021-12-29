@@ -11,3 +11,6 @@
 # to change depending on the environment.
 #
 *.tfvars
+
+# Air (Go hot-reloader) helpers
+tmp/*
