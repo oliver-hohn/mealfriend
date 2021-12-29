@@ -10,6 +10,17 @@ require (
 )
 
 require (
+	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
+	github.com/jackc/pgconn v1.10.1 // indirect
+	github.com/jackc/pgio v1.0.0 // indirect
+	github.com/jackc/pgpassfile v1.0.0 // indirect
+	github.com/jackc/pgproto3/v2 v2.2.0 // indirect
+	github.com/jackc/pgservicefile v0.0.0-20200714003250-2b9c44734f2b // indirect
+	github.com/jackc/pgtype v1.9.1 // indirect
+	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97 // indirect
+)
+
+require (
 	cloud.google.com/go/storage v1.16.1
 	github.com/andybalholm/cascadia v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.1 // indirect
@@ -24,6 +35,7 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/googleapis/gax-go/v2 v2.0.5 // indirect
+	github.com/jackc/pgx/v4 v4.14.1
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20210805134026-6f1e6394065a // indirect
 	golang.org/x/sys v0.0.0-20210806184541-e5e7981a1069 // indirect

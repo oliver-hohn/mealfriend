@@ -1,13 +1,27 @@
 version: "3.9"
 services:
+  db:
+    environment:
+      POSTGRES_DB: mealfriend_development
+      POSTGRES_USER: local-dev
+      POSTGRES_PASSWORD: password
+    image: postgres:14-alpine
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
   app:
     build:
       dockerfile: Dockerfile
       context: .
       target: dev
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgres://local-dev:password@db/mealfriend_development
     volumes:
       - .:/app
       - godeps:/go/pkg/mod/cache
 
 volumes:
+  pgdata:
   godeps:
