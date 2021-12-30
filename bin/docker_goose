@@ -1,0 +1,3 @@
+#!/bin/bash
+
+bin/docker_run goose -dir=./db/migrations "$@" && bin/docker_run pg_dump -f ./db/schema.sql --schema-only

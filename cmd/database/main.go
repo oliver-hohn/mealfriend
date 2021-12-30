@@ -9,12 +9,10 @@ import (
 	"github.com/oliver-hohn/mealfriend/envs"
 )
 
-var DB_URL = envs.MustGetEnv("DATABASE_URL")
-
 func main() {
 	ctx := context.Background()
 
-	conn, err := database.Start(DB_URL, ctx)
+	conn, err := database.Start(mustGenerateDatabaseURL(), ctx)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -25,4 +23,14 @@ func main() {
 	}
 
 	fmt.Println("successful DB setup!")
+}
+
+func mustGenerateDatabaseURL() string {
+	host := envs.MustGetEnv("PGHOST")
+	port := envs.MustGetEnv("PGPORT")
+	database := envs.MustGetEnv("PGDATABASE")
+	user := envs.MustGetEnv("PGUSER")
+	password := envs.MustGetEnv("PGPASSWORD")
+
+	return fmt.Sprintf("postgres://%s:%s@%s:%s/%s", user, password, host, port, database)
 }
