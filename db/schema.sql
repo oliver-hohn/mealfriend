@@ -74,6 +74,27 @@ CREATE TABLE public.ingredients (
 ALTER TABLE public.ingredients OWNER TO "local-dev";
 
 --
+-- Name: ingredients_id_seq; Type: SEQUENCE; Schema: public; Owner: local-dev
+--
+
+CREATE SEQUENCE public.ingredients_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.ingredients_id_seq OWNER TO "local-dev";
+
+--
+-- Name: ingredients_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: local-dev
+--
+
+ALTER SEQUENCE public.ingredients_id_seq OWNED BY public.ingredients.id;
+
+
+--
 -- Name: recipes; Type: TABLE; Schema: public; Owner: local-dev
 --
 
@@ -90,10 +111,45 @@ CREATE TABLE public.recipes (
 ALTER TABLE public.recipes OWNER TO "local-dev";
 
 --
+-- Name: recipes_id_seq; Type: SEQUENCE; Schema: public; Owner: local-dev
+--
+
+CREATE SEQUENCE public.recipes_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.recipes_id_seq OWNER TO "local-dev";
+
+--
+-- Name: recipes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: local-dev
+--
+
+ALTER SEQUENCE public.recipes_id_seq OWNED BY public.recipes.id;
+
+
+--
 -- Name: goose_db_version id; Type: DEFAULT; Schema: public; Owner: local-dev
 --
 
 ALTER TABLE ONLY public.goose_db_version ALTER COLUMN id SET DEFAULT nextval('public.goose_db_version_id_seq'::regclass);
+
+
+--
+-- Name: ingredients id; Type: DEFAULT; Schema: public; Owner: local-dev
+--
+
+ALTER TABLE ONLY public.ingredients ALTER COLUMN id SET DEFAULT nextval('public.ingredients_id_seq'::regclass);
+
+
+--
+-- Name: recipes id; Type: DEFAULT; Schema: public; Owner: local-dev
+--
+
+ALTER TABLE ONLY public.recipes ALTER COLUMN id SET DEFAULT nextval('public.recipes_id_seq'::regclass);
 
 
 --

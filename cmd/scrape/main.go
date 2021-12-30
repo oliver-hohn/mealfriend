@@ -8,8 +8,11 @@ import (
 	"os"
 
 	"github.com/olekukonko/tablewriter"
+	"github.com/oliver-hohn/mealfriend/database"
+	"github.com/oliver-hohn/mealfriend/envs"
 	"github.com/oliver-hohn/mealfriend/models"
 	"github.com/oliver-hohn/mealfriend/scrapers"
+	"gorm.io/gorm"
 )
 
 var inputURL = flag.String("input_url", "", "Where to scrape")
@@ -27,6 +30,17 @@ func main() {
 		log.Fatalf("invalid input_url: %v", err)
 	}
 
+	conn, err := database.CreateConn(database.DatabaseConfig{
+		Host:     envs.MustGetEnv("PGHOST"),
+		Port:     envs.MustGetIntEnv("PGPORT"),
+		Database: envs.MustGetEnv("PGDATABASE"),
+		Username: envs.MustGetEnv("PGUSER"),
+		Password: envs.MustGetEnv("PGPASSWORD"),
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	c := scrapers.NewScraperClient()
 	r, err := c.Run(u)
 	if err != nil {
@@ -36,7 +50,7 @@ func main() {
 	prettyPrintRecipe(r)
 
 	if *shouldStore {
-		if err := store(r); err != nil {
+		if err := store(conn, r); err != nil {
 			log.Fatal(err)
 		} else {
 			fmt.Printf("stored %s\n", r.Name)
@@ -58,23 +72,10 @@ func prettyPrintRecipe(r *models.Recipe) {
 	table.Render()
 }
 
-func store(r *models.Recipe) error {
-	// TODO
-	// ctx := context.Background()
-	// client, err := gcp.NewClient(ctx)
-	// if err != nil {
-	// 	return fmt.Errorf("unable to create GCP client: %w", err)
-	// }
-
-	// b, err := proto.Marshal(r)
-	// if err != nil {
-	// 	return fmt.Errorf("unable to serialize Recipe proto: %w", err)
-	// }
-
-	// key := fmt.Sprintf("recipes/%s.pb", r.Code)
-	// if err := storage.Save(ctx, client, "mealfriend-datastore", key, b); err != nil {
-	// 	return fmt.Errorf("unable to write to GCP: %w", err)
-	// }
+func store(db *gorm.DB, r *models.Recipe) error {
+	if err := db.Create(r).Error; err != nil {
+		return fmt.Errorf("unable to write the recipe to the DB: %w", err)
+	}
 
 	return nil
 }
