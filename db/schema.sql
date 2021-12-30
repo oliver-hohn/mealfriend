@@ -57,6 +57,33 @@ ALTER SEQUENCE public.goose_db_version_id_seq OWNED BY public.goose_db_version.i
 
 
 --
+-- Name: ingredients; Type: TABLE; Schema: public; Owner: local-dev
+--
+
+CREATE TABLE public.ingredients (
+    id bigint NOT NULL,
+    name text NOT NULL,
+    type text,
+    recipe_id bigint NOT NULL
+);
+
+
+ALTER TABLE public.ingredients OWNER TO "local-dev";
+
+--
+-- Name: recipes; Type: TABLE; Schema: public; Owner: local-dev
+--
+
+CREATE TABLE public.recipes (
+    id bigint NOT NULL,
+    code text NOT NULL,
+    name text NOT NULL
+);
+
+
+ALTER TABLE public.recipes OWNER TO "local-dev";
+
+--
 -- Name: goose_db_version id; Type: DEFAULT; Schema: public; Owner: local-dev
 --
 
@@ -69,6 +96,37 @@ ALTER TABLE ONLY public.goose_db_version ALTER COLUMN id SET DEFAULT nextval('pu
 
 ALTER TABLE ONLY public.goose_db_version
     ADD CONSTRAINT goose_db_version_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: ingredients ingredients_pkey; Type: CONSTRAINT; Schema: public; Owner: local-dev
+--
+
+ALTER TABLE ONLY public.ingredients
+    ADD CONSTRAINT ingredients_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: recipes recipes_pkey; Type: CONSTRAINT; Schema: public; Owner: local-dev
+--
+
+ALTER TABLE ONLY public.recipes
+    ADD CONSTRAINT recipes_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: index_ingredients_on_recipe_id; Type: INDEX; Schema: public; Owner: local-dev
+--
+
+CREATE INDEX index_ingredients_on_recipe_id ON public.recipes USING btree (id);
+
+
+--
+-- Name: ingredients ingredients_recipe_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: local-dev
+--
+
+ALTER TABLE ONLY public.ingredients
+    ADD CONSTRAINT ingredients_recipe_id_fkey FOREIGN KEY (recipe_id) REFERENCES public.recipes(id);
 
 
 --
