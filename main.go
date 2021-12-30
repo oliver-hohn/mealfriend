@@ -44,8 +44,8 @@ func main() {
 	prettyPrintSchedule(schedule)
 }
 
-func getRecipes() ([]pbmodels.Recipe, error) {
-	recipes := []pbmodels.Recipe{
+func getRecipes() ([]*pbmodels.Recipe, error) {
+	recipes := []*pbmodels.Recipe{
 		{
 			Name: "Chicken Pasta Bake",
 			Ingredients: []*pbmodels.Ingredient{
@@ -146,7 +146,7 @@ func getDiet() (*Diet, error) {
 	return diet, nil
 }
 
-func generateSchedule(recipes []pbmodels.Recipe, diet *Diet) (map[string]*pbmodels.Recipe, error) {
+func generateSchedule(recipes []*pbmodels.Recipe, diet *Diet) (map[string]*pbmodels.Recipe, error) {
 	recipesByDay := map[string]*pbmodels.Recipe{}
 
 	for i, rule := range diet.Rules {
@@ -161,7 +161,7 @@ func generateSchedule(recipes []pbmodels.Recipe, diet *Diet) (map[string]*pbmode
 	return recipesByDay, nil
 }
 
-func recipeHasIngredient(r pbmodels.Recipe, i pbmodels.Ingredient_Type) bool {
+func recipeHasIngredient(r *pbmodels.Recipe, i pbmodels.Ingredient_Type) bool {
 	for _, ingredient := range r.GetIngredients() {
 		if ingredient.GetType() == i {
 			return true
@@ -171,12 +171,12 @@ func recipeHasIngredient(r pbmodels.Recipe, i pbmodels.Ingredient_Type) bool {
 	return false
 }
 
-func getRandomRecipeWith(i pbmodels.Ingredient_Type, r []pbmodels.Recipe) (*pbmodels.Recipe, error) {
+func getRandomRecipeWith(i pbmodels.Ingredient_Type, r []*pbmodels.Recipe) (*pbmodels.Recipe, error) {
 	rand.Shuffle(len(r), func(a, b int) { r[a], r[b] = r[b], r[a] })
 
 	for _, recipe := range r {
 		if recipeHasIngredient(recipe, i) {
-			return &recipe, nil
+			return recipe, nil
 		}
 	}
 
