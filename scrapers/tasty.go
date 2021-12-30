@@ -6,13 +6,13 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/iancoleman/strcase"
-	pbmodels "github.com/oliver-hohn/mealfriend/protos/models"
+	"github.com/oliver-hohn/mealfriend/models"
 	"github.com/oliver-hohn/mealfriend/scrapers/utils"
 )
 
 const TASTY_HOST = "tasty.co"
 
-func (s *ScraperClient) scrapeFromTasty(u *url.URL) (*pbmodels.Recipe, error) {
+func (s *ScraperClient) scrapeFromTasty(u *url.URL) (*models.Recipe, error) {
 	res, err := s.httpClient.Get(u.String())
 	if err != nil {
 		return nil, fmt.Errorf("unable to fetch %s: %w", u.String(), err)
@@ -27,7 +27,7 @@ func (s *ScraperClient) scrapeFromTasty(u *url.URL) (*pbmodels.Recipe, error) {
 		return nil, fmt.Errorf("unable to parse HTML in response: %w", err)
 	}
 
-	recipe := pbmodels.Recipe{}
+	recipe := models.Recipe{}
 
 	// Ensure only one node for the name is found
 	nameSelection := doc.Find(".recipe-name")

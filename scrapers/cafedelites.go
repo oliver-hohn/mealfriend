@@ -6,13 +6,13 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/iancoleman/strcase"
-	pbmodels "github.com/oliver-hohn/mealfriend/protos/models"
+	"github.com/oliver-hohn/mealfriend/models"
 	"github.com/oliver-hohn/mealfriend/scrapers/utils"
 )
 
 const CAFE_DELITES_HOST = "cafedelites.com"
 
-func (s *ScraperClient) scrapeFromCafeDelites(u *url.URL) (*pbmodels.Recipe, error) {
+func (s *ScraperClient) scrapeFromCafeDelites(u *url.URL) (*models.Recipe, error) {
 	res, err := s.httpClient.Get(u.String())
 	if err != nil {
 		return nil, fmt.Errorf("unable to fetch %s: %w", u.String(), err)
@@ -27,7 +27,7 @@ func (s *ScraperClient) scrapeFromCafeDelites(u *url.URL) (*pbmodels.Recipe, err
 		return nil, fmt.Errorf("unable to parse HTML in response: %w", err)
 	}
 
-	recipe := pbmodels.Recipe{}
+	recipe := models.Recipe{}
 
 	// Ensure only one node for the name is found
 	nameSelection := doc.Find(".wprm-recipe-name")

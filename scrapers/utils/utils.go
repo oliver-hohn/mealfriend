@@ -3,9 +3,9 @@ package utils
 import (
 	"strings"
 
-	pbmodels "github.com/oliver-hohn/mealfriend/protos/models"
+	"github.com/oliver-hohn/mealfriend/models"
 )
 
-func NewIngredient(raw string) *pbmodels.Ingredient {
-	return &pbmodels.Ingredient{Name: strings.TrimSpace(raw)}
+func NewIngredient(raw string) models.Ingredient {
+	return models.Ingredient{Name: strings.TrimSpace(raw)}
 }

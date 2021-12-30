@@ -6,7 +6,6 @@ require (
 	github.com/PuerkitoBio/goquery v1.6.1
 	github.com/hashicorp/go-retryablehttp v0.6.8
 	github.com/olekukonko/tablewriter v0.0.4
-	google.golang.org/protobuf v1.27.1
 	gorm.io/gorm v1.22.3
 )
 
@@ -21,6 +20,7 @@ require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.2 // indirect
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
+	google.golang.org/protobuf v1.27.1 // indirect
 )
 
 require (
