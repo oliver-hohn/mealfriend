@@ -64,7 +64,10 @@ CREATE TABLE public.ingredients (
     id bigint NOT NULL,
     name text NOT NULL,
     type text,
-    recipe_id bigint NOT NULL
+    recipe_id bigint NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    deleted_at timestamp with time zone
 );
 
 
@@ -77,7 +80,10 @@ ALTER TABLE public.ingredients OWNER TO "local-dev";
 CREATE TABLE public.recipes (
     id bigint NOT NULL,
     code text NOT NULL,
-    name text NOT NULL
+    name text NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    deleted_at timestamp with time zone
 );
 
 
@@ -115,10 +121,24 @@ ALTER TABLE ONLY public.recipes
 
 
 --
+-- Name: index_ingredients_on_deleted_at; Type: INDEX; Schema: public; Owner: local-dev
+--
+
+CREATE INDEX index_ingredients_on_deleted_at ON public.ingredients USING btree (deleted_at);
+
+
+--
 -- Name: index_ingredients_on_recipe_id; Type: INDEX; Schema: public; Owner: local-dev
 --
 
 CREATE INDEX index_ingredients_on_recipe_id ON public.recipes USING btree (id);
+
+
+--
+-- Name: index_recipes_on_deleted_at; Type: INDEX; Schema: public; Owner: local-dev
+--
+
+CREATE INDEX index_recipes_on_deleted_at ON public.recipes USING btree (deleted_at);
 
 
 --
