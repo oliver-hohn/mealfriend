@@ -65,8 +65,9 @@ func prettyPrintRecipe(r *models.Recipe) {
 	table.SetHeader([]string{"Name", "Type"})
 
 	for _, i := range r.Ingredients {
+		// TODO: Add Ingredient Type
 		table.Append([]string{
-			i.Name, string(i.Type),
+			i.Name, "",
 		})
 	}
 	table.Render()

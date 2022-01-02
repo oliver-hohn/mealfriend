@@ -8,6 +8,18 @@
    ```
 
 ## Usage
+### Seed
+1. Run:
+   ```sh
+   bin/docker_run go run cmd/seed/main.go --seed_file=config/seed.csv
+   ```
+
+### Plan
+1. Run:
+   ```sh
+   bin/docker_run go run cmd/plan/main.go --count=3
+   ```
+
 ### Scrape a recipe
 1. Run:
    ```sh
