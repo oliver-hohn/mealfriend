@@ -14,3 +14,6 @@
 
 # Air (Go hot-reloader) helpers
 tmp/*
+
+training/data/*
+!training/data/.keep
