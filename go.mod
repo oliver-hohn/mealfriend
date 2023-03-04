@@ -1,6 +1,6 @@
 module github.com/oliver-hohn/mealfriend
 
-go 1.17
+go 1.20
 
 require (
 	github.com/PuerkitoBio/goquery v1.6.1
