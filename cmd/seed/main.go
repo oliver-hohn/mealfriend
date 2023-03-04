@@ -95,8 +95,7 @@ func parseSeedRow(row []string) (*models.Recipe, error) {
 		return nil, fmt.Errorf("invalid url %v: %w", row[0], err)
 	}
 
-	c := scrapers.NewScraperClient()
-	recipe, err := c.Run(u)
+	recipe, err := scrapers.Scrape(u)
 	if err != nil {
 		return nil, fmt.Errorf("unable to scrape %s: %w", u.String(), err)
 	}

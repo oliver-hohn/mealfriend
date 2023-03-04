@@ -2,33 +2,29 @@ package scrapers
 
 import (
 	"fmt"
-	"net/http"
 	"net/url"
 
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/oliver-hohn/mealfriend/models"
 )
 
-type ScraperClient struct {
-	httpClient *http.Client
+type Scraper interface {
+	Run(u *url.URL) (*models.Recipe, error)
 }
 
-func NewScraperClient() *ScraperClient {
+func Scrape(u *url.URL) (*models.Recipe, error) {
 	retryClient := retryablehttp.NewClient()
 	retryClient.RetryMax = 5
 
-	return &ScraperClient{
-		httpClient: retryClient.StandardClient(),
-	}
-}
-
-func (s *ScraperClient) Run(u *url.URL) (*models.Recipe, error) {
+	var s Scraper
 	switch u.Hostname() {
 	case CAFE_DELITES_HOST:
-		return s.scrapeFromCafeDelites(u)
+		s = NewCafeDelitesScraper(retryClient.HTTPClient)
 	case TASTY_HOST:
-		return s.scrapeFromTasty(u)
+		s = NewTastyScraper(retryClient.HTTPClient)
 	default:
 		return nil, fmt.Errorf("unsupported host: %s", u.Hostname())
 	}
+
+	return s.Run(u)
 }

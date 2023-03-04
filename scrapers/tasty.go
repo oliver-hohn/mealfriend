@@ -2,6 +2,7 @@ package scrapers
 
 import (
 	"fmt"
+	"net/http"
 	"net/url"
 
 	"github.com/PuerkitoBio/goquery"
@@ -12,7 +13,15 @@ import (
 
 const TASTY_HOST = "tasty.co"
 
-func (s *ScraperClient) scrapeFromTasty(u *url.URL) (*models.Recipe, error) {
+type TastyScraper struct {
+	httpClient *http.Client
+}
+
+func NewTastyScraper(httpClient *http.Client) *TastyScraper {
+	return &TastyScraper{httpClient: httpClient}
+}
+
+func (s *TastyScraper) Run(u *url.URL) (*models.Recipe, error) {
 	res, err := s.httpClient.Get(u.String())
 	if err != nil {
 		return nil, fmt.Errorf("unable to fetch %s: %w", u.String(), err)

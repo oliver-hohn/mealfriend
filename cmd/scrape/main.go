@@ -41,8 +41,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	c := scrapers.NewScraperClient()
-	r, err := c.Run(u)
+	r, err := scrapers.Scrape(u)
 	if err != nil {
 		log.Fatalf("unable to scrape %s: %v", *inputURL, err)
 	}

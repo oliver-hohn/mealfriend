@@ -2,6 +2,7 @@ package scrapers
 
 import (
 	"fmt"
+	"net/http"
 	"net/url"
 
 	"github.com/PuerkitoBio/goquery"
@@ -12,7 +13,15 @@ import (
 
 const CAFE_DELITES_HOST = "cafedelites.com"
 
-func (s *ScraperClient) scrapeFromCafeDelites(u *url.URL) (*models.Recipe, error) {
+type CafeDelitesScraper struct {
+	httpClient *http.Client
+}
+
+func NewCafeDelitesScraper(httpClient *http.Client) *CafeDelitesScraper {
+	return &CafeDelitesScraper{httpClient: httpClient}
+}
+
+func (s *CafeDelitesScraper) Run(u *url.URL) (*models.Recipe, error) {
 	res, err := s.httpClient.Get(u.String())
 	if err != nil {
 		return nil, fmt.Errorf("unable to fetch %s: %w", u.String(), err)
