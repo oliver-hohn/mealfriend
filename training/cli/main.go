@@ -157,7 +157,7 @@ func export(foods []*food, categoriesById map[int]*category, outputPath string) 
 		var fmtCategory string
 
 		if rawCategory, ok := categoriesById[food.CategoryId]; ok {
-			fmtCategory = generateFormattedCategory(rawCategory.Description)
+			fmtCategory = string(generateFormattedCategory(rawCategory.Description))
 		} else {
 			fmtCategory = "none_of_the_above"
 		}
@@ -197,7 +197,7 @@ func export(foods []*food, categoriesById map[int]*category, outputPath string) 
 	return nil
 }
 
-func generateFormattedCategory(rawCategory string) string {
+func generateFormattedCategory(rawCategory string) models.IngredientType {
 	switch rawCategory {
 	case "Dairy and Egg Products":
 		return models.DAIRY_AND_EGG
