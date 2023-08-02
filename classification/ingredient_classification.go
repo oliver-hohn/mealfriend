@@ -2,6 +2,7 @@ package classification
 
 import (
 	"regexp"
+	"strings"
 
 	"github.com/oliver-hohn/mealfriend/models"
 )
@@ -10,12 +11,15 @@ var classificationRules = []Rule{
 	{Condition: regexp.MustCompile("beef"), IngredientType: models.BEEF},
 
 	{Condition: regexp.MustCompile("butter"), IngredientType: models.DAIRY_AND_EGG},
+	{Condition: regexp.MustCompile("cheddar"), IngredientType: models.DAIRY_AND_EGG},
 	{Condition: regexp.MustCompile("cheese"), IngredientType: models.DAIRY_AND_EGG},
-	{Condition: regexp.MustCompile(`(double|heavy|single)\s*cream`), IngredientType: models.DAIRY_AND_EGG},
+	{Condition: regexp.MustCompile(`(double|heavy|single|sour)\s*cream`), IngredientType: models.DAIRY_AND_EGG},
 	{Condition: regexp.MustCompile("egg"), IngredientType: models.DAIRY_AND_EGG},
 	{Condition: regexp.MustCompile("milk"), IngredientType: models.DAIRY_AND_EGG},
+	{Condition: regexp.MustCompile("mozzarella"), IngredientType: models.DAIRY_AND_EGG},
 
 	{Condition: regexp.MustCompile("apple"), IngredientType: models.FRUIT},
+	{Condition: regexp.MustCompile("avocado"), IngredientType: models.FRUIT},
 	{Condition: regexp.MustCompile("banana"), IngredientType: models.FRUIT},
 	{Condition: regexp.MustCompile("coconut"), IngredientType: models.FRUIT},
 	{Condition: regexp.MustCompile("lemon"), IngredientType: models.FRUIT},
@@ -67,9 +71,11 @@ var classificationRules = []Rule{
 }
 
 func Classify(raw string) models.IngredientType {
-	for _, r := range classificationRules {
-		if r.Condition.MatchString(raw) {
-			return r.IngredientType
+	r := strings.ToLower(raw)
+
+	for _, rule := range classificationRules {
+		if rule.Condition.MatchString(r) {
+			return rule.IngredientType
 		}
 	}
 
