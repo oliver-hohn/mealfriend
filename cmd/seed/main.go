@@ -46,7 +46,9 @@ func main() {
 
 	if !*dryRun {
 		clearRecipes(conn)
-		storeRecipes(conn, recipes)
+		if err := storeRecipes(conn, recipes); err != nil {
+			log.Fatal(err)
+		}
 	}
 }
 

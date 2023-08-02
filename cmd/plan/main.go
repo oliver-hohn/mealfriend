@@ -24,7 +24,7 @@ func main() {
 		log.Fatal("provide a >0 value for count")
 	}
 
-	rand.Seed(time.Now().UnixNano())
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	db, err := database.CreateConn(database.DatabaseConfig{
 		Host:     envs.MustGetEnv("PGHOST"),
@@ -42,7 +42,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	menu := generateMenu(recipes, *count)
+	menu := generateMenu(recipes, *count, r)
 	prettyPrintMenu(menu)
 }
 
@@ -55,9 +55,9 @@ func getRecipes(db *gorm.DB) ([]*models.Recipe, error) {
 	return recipes, nil
 }
 
-func generateMenu(recipes []*models.Recipe, count int) []*models.Recipe {
+func generateMenu(recipes []*models.Recipe, count int, r *rand.Rand) []*models.Recipe {
 	// shuffle recipes to add variety
-	rand.Shuffle(len(recipes), func(a, b int) { recipes[a], recipes[b] = recipes[b], recipes[a] })
+	r.Shuffle(len(recipes), func(a, b int) { recipes[a], recipes[b] = recipes[b], recipes[a] })
 
 	menu := []*models.Recipe{}
 
