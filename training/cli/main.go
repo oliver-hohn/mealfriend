@@ -144,7 +144,7 @@ type gcpClassification struct {
 	} `json:"classificationAnnotation"`
 	TextContent            string `json:"textContent"`
 	DataItemResourceLabels struct {
-		AiPlatformTag string `json:"aiplatform.googleapis.com/ml_use""`
+		AiPlatformTag string `json:"aiplatform.googleapis.com/ml_use"`
 	} `json:"dataItemResourceLabels"`
 }
 
