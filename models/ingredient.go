@@ -15,8 +15,11 @@ const (
 	LEGUMES            IngredientType = "legumes"
 	PORK               IngredientType = "pork"
 	POULTRY            IngredientType = "poultry"
+	FISH               IngredientType = "fish"
 	SHELLFISH          IngredientType = "shellfish"
 	VEGETABLE          IngredientType = "vegetable"
+
+	UNKNOWN IngredientType = "unknown"
 )
 
 type Ingredient struct {
