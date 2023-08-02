@@ -70,6 +70,8 @@ func prettyPrintRecipe(r *models.Recipe) {
 		})
 	}
 	table.Render()
+
+	fmt.Printf("Ingredients: %d\n", len(r.Ingredients))
 }
 
 func store(db *gorm.DB, r *models.Recipe) error {
