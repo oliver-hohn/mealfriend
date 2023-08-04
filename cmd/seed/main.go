@@ -11,15 +11,12 @@ import (
 	"os"
 	"path"
 
-	"github.com/oliver-hohn/mealfriend/database"
-	"github.com/oliver-hohn/mealfriend/envs"
+	"github.com/oliver-hohn/mealfriend/helpers"
 	"github.com/oliver-hohn/mealfriend/models"
 	"github.com/oliver-hohn/mealfriend/scrapers"
-	"gorm.io/gorm"
 )
 
 var seedFilePath = flag.String("seed_file", "", "path to seed file")
-var dryRun = flag.Bool("dryrun", false, "set to true to not store the parsed recipes")
 
 func main() {
 	flag.Parse()
@@ -28,33 +25,15 @@ func main() {
 		log.Fatal("missing seed_file")
 	}
 
-	conn, err := database.CreateConn(database.DatabaseConfig{
-		Host:     envs.MustGetEnv("PGHOST"),
-		Port:     envs.MustGetIntEnv("PGPORT"),
-		Database: envs.MustGetEnv("PGDATABASE"),
-		Username: envs.MustGetEnv("PGUSER"),
-		Password: envs.MustGetEnv("PGPASSWORD"),
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	recipes, err := parseSeedFile(*seedFilePath)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if !*dryRun {
-		clearRecipes(conn)
-		if err := storeRecipes(conn, recipes); err != nil {
-			log.Fatal(err)
-		}
+	for _, r := range recipes {
+		helpers.PrettyPrintRecipe(r)
+		fmt.Println()
 	}
-}
-
-func clearRecipes(db *gorm.DB) {
-	db.Unscoped().Where("1=1").Delete(&models.Ingredient{})
-	db.Unscoped().Where("1=1").Delete(&models.Recipe{})
 }
 
 func parseSeedFile(p string) ([]*models.Recipe, error) {
@@ -105,18 +84,4 @@ func parseSeedRow(row []string) (*models.Recipe, error) {
 	fmt.Printf("parsed %s\n", u.String())
 
 	return recipe, nil
-}
-
-func storeRecipes(db *gorm.DB, recipes []*models.Recipe) error {
-	return db.Transaction(func(tx *gorm.DB) error {
-		for _, r := range recipes {
-			if err := db.Create(r).Error; err != nil {
-				return fmt.Errorf("unable to store %s: %w", r.Code, err)
-			}
-
-			fmt.Printf("stored %s\n", r.Code)
-		}
-
-		return nil
-	})
 }

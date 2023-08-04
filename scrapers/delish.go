@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/iancoleman/strcase"
 	"github.com/oliver-hohn/mealfriend/models"
 	"github.com/oliver-hohn/mealfriend/scrapers/utils"
 	"golang.org/x/text/cases"
@@ -39,8 +38,6 @@ func (s *DelishScraper) Run(u *url.URL) (*models.Recipe, error) {
 		return nil, fmt.Errorf("unable to parse HTML in response: %w", err)
 	}
 
-	recipe := models.Recipe{}
-
 	// Extract recipe name from the URL, as there is no easy CSS selector to scrape
 	path := strings.TrimSuffix(u.Path, "/")
 	pathSegments := strings.Split(path, "/")
@@ -53,12 +50,12 @@ func (s *DelishScraper) Run(u *url.URL) (*models.Recipe, error) {
 	title := strings.ReplaceAll(titleSegment, "-", " ")
 	title = strings.TrimSuffix(title, "recipe")
 
-	recipe.Name = cases.Title(language.English).String(title)
-	recipe.Code = strcase.ToCamel(recipe.Name)
+	recipeName := cases.Title(language.English).String(title)
 
+	ingredients := []string{}
 	doc.Find(".ingredient-lists > li").Each(func(i int, s *goquery.Selection) {
-		recipe.Ingredients = append(recipe.Ingredients, utils.NewIngredient(s.Text()))
+		ingredients = append(ingredients, s.Text())
 	})
 
-	return &recipe, nil
+	return utils.NewRecipe(recipeName, ingredients, u), nil
 }
