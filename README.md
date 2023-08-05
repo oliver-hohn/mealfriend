@@ -14,6 +14,12 @@
    bin/docker_run go run cmd/seed/main.go --seed_file=config/seed.csv
    ```
 
+### Plan
+1. Run (after seeding):
+   ```sh
+   bin/docker_run go run cmd/plan/main.go --poultry=1 --fish=2
+   ```
+
 ### Scrape a recipe
 1. Run:
    ```sh
@@ -23,3 +29,8 @@
   ```sh
    bin/docker_run go run cmd/scrape/main.go --store=1 --input_url=RECIPE_URL
    ```
+
+## Visualising the DB graph locally (Neo4j)
+1. Run: `docker-compose up`
+1. Go to: http://localhost:7474/browser/
+   1. Connect to: `bolt://localhost:7687`, grab the username and password from docker-compose.yml
