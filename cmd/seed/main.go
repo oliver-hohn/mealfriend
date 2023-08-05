@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/csv"
 	"flag"
 	"fmt"
@@ -11,15 +12,14 @@ import (
 	"os"
 	"path"
 
-	"github.com/oliver-hohn/mealfriend/database"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/oliver-hohn/mealfriend/envs"
+	"github.com/oliver-hohn/mealfriend/helpers"
 	"github.com/oliver-hohn/mealfriend/models"
 	"github.com/oliver-hohn/mealfriend/scrapers"
-	"gorm.io/gorm"
 )
 
 var seedFilePath = flag.String("seed_file", "", "path to seed file")
-var dryRun = flag.Bool("dryrun", false, "set to true to not store the parsed recipes")
 
 func main() {
 	flag.Parse()
@@ -28,33 +28,40 @@ func main() {
 		log.Fatal("missing seed_file")
 	}
 
-	conn, err := database.CreateConn(database.DatabaseConfig{
-		Host:     envs.MustGetEnv("PGHOST"),
-		Port:     envs.MustGetIntEnv("PGPORT"),
-		Database: envs.MustGetEnv("PGDATABASE"),
-		Username: envs.MustGetEnv("PGUSER"),
-		Password: envs.MustGetEnv("PGPASSWORD"),
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	recipes, err := parseSeedFile(*seedFilePath)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if !*dryRun {
-		clearRecipes(conn)
-		if err := storeRecipes(conn, recipes); err != nil {
-			log.Fatal(err)
+	ctx := context.Background()
+	driver, err := neo4j.NewDriverWithContext(envs.MustGetEnv("NEO4J_URI"), neo4j.BasicAuth(envs.MustGetEnv("NEO4J_USERNAME"), envs.MustGetEnv("NEO4J_PASSWORD"), ""))
+	if err != nil {
+		log.Fatalf("unable to initialize neo4j driver: %v", err)
+	}
+	defer driver.Close(ctx)
+
+	if err := driver.VerifyConnectivity(ctx); err != nil {
+		log.Fatalf("invalid neo4j connection: %v", err)
+	}
+
+	if err := clearGraph(ctx, driver); err != nil {
+		log.Fatalf("unable to clear graph: %v", err)
+	}
+
+	if err := seedTags(ctx, driver); err != nil {
+		log.Fatalf("unable to seed tags: %v", err)
+	}
+
+	for _, r := range recipes {
+		if err := saveRecipe(ctx, driver, r); err != nil {
+			log.Fatalf("unable to save %s: %v", r.Code, err)
 		}
 	}
-}
 
-func clearRecipes(db *gorm.DB) {
-	db.Unscoped().Where("1=1").Delete(&models.Ingredient{})
-	db.Unscoped().Where("1=1").Delete(&models.Recipe{})
+	for _, r := range recipes {
+		helpers.PrettyPrintRecipe(r)
+		fmt.Println()
+	}
 }
 
 func parseSeedFile(p string) ([]*models.Recipe, error) {
@@ -107,16 +114,73 @@ func parseSeedRow(row []string) (*models.Recipe, error) {
 	return recipe, nil
 }
 
-func storeRecipes(db *gorm.DB, recipes []*models.Recipe) error {
-	return db.Transaction(func(tx *gorm.DB) error {
-		for _, r := range recipes {
-			if err := db.Create(r).Error; err != nil {
-				return fmt.Errorf("unable to store %s: %w", r.Code, err)
-			}
+func clearGraph(ctx context.Context, driver neo4j.DriverWithContext) error {
+	_, err := neo4j.ExecuteQuery[*neo4j.EagerResult](
+		ctx,
+		driver,
+		`match (n) detach delete n`,
+		map[string]interface{}{},
+		neo4j.EagerResultTransformer,
+	)
+	if err != nil {
+		return fmt.Errorf("unable to create recipe: %w", err)
+	}
 
-			fmt.Printf("stored %s\n", r.Code)
+	return nil
+}
+
+func seedTags(ctx context.Context, driver neo4j.DriverWithContext) error {
+	var query bytes.Buffer
+	params := map[string]interface{}{}
+	for i, t := range models.AvailableTags {
+		paramKey := fmt.Sprintf("value%d", i)
+		query.WriteString(fmt.Sprintf("create (t%d:Tag {value: $%s})\n", i, paramKey))
+		params[paramKey] = t
+	}
+
+	_, err := neo4j.ExecuteQuery[*neo4j.EagerResult](
+		ctx,
+		driver,
+		query.String(),
+		params,
+		neo4j.EagerResultTransformer,
+	)
+	if err != nil {
+		return fmt.Errorf("unable to create recipe: %w", err)
+	}
+
+	return nil
+}
+
+func saveRecipe(ctx context.Context, driver neo4j.DriverWithContext, r *models.Recipe) error {
+	_, err := neo4j.ExecuteQuery[*neo4j.EagerResult](
+		ctx,
+		driver,
+		`create (r:Recipe {name: $name, code: $code, source: $source}) return r`,
+		map[string]interface{}{"name": r.Name, "code": r.Code, "source": r.Source.String()},
+		neo4j.EagerResultTransformer,
+	)
+	if err != nil {
+		return fmt.Errorf("unable to create recipe: %w", err)
+	}
+
+	for _, t := range r.Tags {
+		fmt.Printf("creating tag: %s\n", t)
+		_, err = neo4j.ExecuteQuery[*neo4j.EagerResult](
+			ctx,
+			driver,
+			`match (r:Recipe {code: $code})
+			 match (t:Tag {value: $tag})
+			 create (r)-[:tagged_as]->(t)
+			`,
+			map[string]interface{}{"code": r.Code, "tag": t},
+			neo4j.EagerResultTransformer,
+		)
+
+		if err != nil {
+			return fmt.Errorf("unable to link tags: %w", err)
 		}
+	}
 
-		return nil
-	})
+	return nil
 }

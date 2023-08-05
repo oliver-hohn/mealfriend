@@ -15,9 +15,9 @@
    ```
 
 ### Plan
-1. Run:
+1. Run (after seeding):
    ```sh
-   bin/docker_run go run cmd/plan/main.go --count=3
+   bin/docker_run go run cmd/plan/main.go --poultry=1 --fish=2
    ```
 
 ### Scrape a recipe
@@ -30,12 +30,7 @@
    bin/docker_run go run cmd/scrape/main.go --store=1 --input_url=RECIPE_URL
    ```
 
-## Create DB migrations
-1. Run:
-  ```sh
-  bin/docker_goose create name_of_migration sql
-  ```
-1. Run:
-  ```
-  bin/docker_goose up
-  ```
+## Visualising the DB graph locally (Neo4j)
+1. Run: `docker-compose up`
+1. Go to: http://localhost:7474/browser/
+   1. Connect to: `bolt://localhost:7687`, grab the username and password from docker-compose.yml

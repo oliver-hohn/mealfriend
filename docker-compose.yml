@@ -1,38 +1,37 @@
 version: "3.9"
 services:
-  db:
-    environment:
-      POSTGRES_DB: mealfriend_development
-      POSTGRES_USER: local-dev
-      POSTGRES_PASSWORD: password
-    image: postgres:15-alpine
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-
   app:
     build:
       dockerfile: Dockerfile
       context: .
       target: dev
     depends_on:
-      - db
+      neo4j:
+        condition: service_healthy
     environment:
-      # Extracted from: postgres://local-dev:password@db/mealfriend_development
-      PGHOST: db
-      PGPORT: 5432
-      PGDATABASE: mealfriend_development
-      PGUSER: local-dev
-      PGPASSWORD: password
-      # Configure DB migration helpers:
-      # - https://github.com/pressly/goose
-      # - https://www.postgresql.org/docs/13/app-pgdump.html
-      GOOSE_DRIVER: postgres
-      GOOSE_DBSTRING: postgres://local-dev:password@db/mealfriend_development?sslmode=disable
-
+      NEO4J_URI: bolt://neo4j:7687
+      NEO4J_USERNAME: neo4j
+      NEO4J_PASSWORD: your_password
     volumes:
       - .:/app
       - godeps:/go/pkg/mod/cache
 
+  neo4j:
+    environment:
+      NEO4J_AUTH: neo4j/your_password
+    image: neo4j:5.10
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - neo4jdata:/data
+    healthcheck:
+        test: wget http://localhost:7474 || exit 1
+        interval: 1s
+        timeout: 10s
+        retries: 20
+        start_period: 3s
+
 volumes:
-  pgdata:
   godeps:
+  neo4jdata:

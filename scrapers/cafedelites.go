@@ -6,7 +6,6 @@ import (
 	"net/url"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/iancoleman/strcase"
 	"github.com/oliver-hohn/mealfriend/models"
 	"github.com/oliver-hohn/mealfriend/scrapers/utils"
 )
@@ -36,8 +35,6 @@ func (s *CafeDelitesScraper) Run(u *url.URL) (*models.Recipe, error) {
 		return nil, fmt.Errorf("unable to parse HTML in response: %w", err)
 	}
 
-	recipe := models.Recipe{}
-
 	// Ensure only one node for the name is found
 	nameSelection := doc.Find(".wprm-recipe-name")
 	if len(nameSelection.Nodes) != 1 {
@@ -45,14 +42,16 @@ func (s *CafeDelitesScraper) Run(u *url.URL) (*models.Recipe, error) {
 			"unexpected recipe format: %d node(s) for the name have been found, expected 1", len(nameSelection.Nodes),
 		)
 	}
+
+	var recipeName string
 	nameSelection.Each(func(i int, s *goquery.Selection) {
-		recipe.Name = s.Text()
-		recipe.Code = strcase.ToCamel(recipe.Name)
+		recipeName = s.Text()
 	})
 
+	ingredients := []string{}
 	doc.Find(".wprm-recipe-ingredients > .wprm-recipe-ingredient").Each(func(i int, s *goquery.Selection) {
-		recipe.Ingredients = append(recipe.Ingredients, utils.NewIngredient(s.Text()))
+		ingredients = append(ingredients, s.Text())
 	})
 
-	return &recipe, nil
+	return utils.NewRecipe(recipeName, ingredients, u), nil
 }

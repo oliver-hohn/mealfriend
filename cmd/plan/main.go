@@ -1,89 +1,166 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
 	"math/rand"
-	"os"
-	"time"
+	"net/url"
 
-	"github.com/olekukonko/tablewriter"
-	"github.com/oliver-hohn/mealfriend/database"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j/db"
 	"github.com/oliver-hohn/mealfriend/envs"
+	"github.com/oliver-hohn/mealfriend/helpers"
 	"github.com/oliver-hohn/mealfriend/models"
-	"gorm.io/gorm"
 )
 
-var count = flag.Int("count", -1, "number of recipes")
+var poultry = flag.Int("poultry", -1, "TODO")
+var fish = flag.Int("fish", -1, "TODO")
+
+var count = flag.Int("count", 5, "number of recipes to plan")
 
 func main() {
 	flag.Parse()
 
-	if *count < 1 {
-		log.Fatal("provide a >0 value for count")
-	}
-
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-
-	db, err := database.CreateConn(database.DatabaseConfig{
-		Host:     envs.MustGetEnv("PGHOST"),
-		Port:     envs.MustGetIntEnv("PGPORT"),
-		Database: envs.MustGetEnv("PGDATABASE"),
-		Username: envs.MustGetEnv("PGUSER"),
-		Password: envs.MustGetEnv("PGPASSWORD"),
-	})
+	ctx := context.Background()
+	driver, err := neo4j.NewDriverWithContext(envs.MustGetEnv("NEO4J_URI"), neo4j.BasicAuth(envs.MustGetEnv("NEO4J_USERNAME"), envs.MustGetEnv("NEO4J_PASSWORD"), ""))
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("unable to initialize neo4j driver: %v", err)
+	}
+	defer driver.Close(ctx)
+
+	if err := driver.VerifyConnectivity(ctx); err != nil {
+		log.Fatalf("invalid neo4j connection: %v", err)
 	}
 
-	recipes, err := getRecipes(db)
+	recipes := []*models.Recipe{}
+
+	if *poultry > 0 {
+		res, err := fetchRecipesByTag(ctx, driver, models.POULTRY, *poultry, collectCodes(recipes))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		recipes = append(recipes, res...)
+	}
+
+	if *fish > 0 {
+		res, err := fetchRecipesByTag(ctx, driver, models.FISH, *fish, collectCodes(recipes))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		recipes = append(recipes, res...)
+	}
+
+	if len(recipes) < *count {
+		res, err := fetchRecipes(ctx, driver, *count-len(recipes), collectCodes(recipes))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		recipes = append(recipes, res...)
+	}
+
+	for _, r := range recipes {
+		helpers.PrettyPrintRecipe(r)
+		fmt.Println()
+	}
+}
+
+func fetchRecipesByTag(ctx context.Context, driver neo4j.DriverWithContext, t models.Tag, count int, excludedRecipes []string) ([]*models.Recipe, error) {
+	ret := make([]*models.Recipe, count)
+
+	res, err := neo4j.ExecuteQuery[*neo4j.EagerResult](
+		ctx,
+		driver,
+		`MATCH (r:Recipe)-[:tagged_as]->(t:Tag)
+		WHERE t.value = $tag AND NOT r.code IN $excludedRecipes
+		RETURN r`,
+		map[string]interface{}{"tag": t, "excludedRecipes": excludedRecipes},
+		neo4j.EagerResultTransformer,
+	)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("unable to fetch recipe for tag: %s, due to: %w", t, err)
 	}
 
-	menu := generateMenu(recipes, *count, r)
-	prettyPrintMenu(menu)
+	for i := 0; i < len(ret); i++ {
+		j := rand.Intn(len(res.Records))
+
+		recipe, err := parseResult(res.Records[j])
+		if err != nil {
+			return nil, fmt.Errorf("unable to parse result (i: %d): %w", i, err)
+		}
+
+		ret[i] = recipe
+	}
+
+	return ret, nil
 }
 
-func getRecipes(db *gorm.DB) ([]*models.Recipe, error) {
-	var recipes []*models.Recipe
-	if err := db.Preload("Ingredients").Find(&recipes).Error; err != nil {
-		return nil, fmt.Errorf("unable to fetch recipes: %w", err)
+func fetchRecipes(ctx context.Context, driver neo4j.DriverWithContext, count int, excludedRecipes []string) ([]*models.Recipe, error) {
+	ret := make([]*models.Recipe, count)
+
+	res, err := neo4j.ExecuteQuery[*neo4j.EagerResult](
+		ctx,
+		driver,
+		`MATCH (r:Recipe)
+		WHERE NOT r.code IN $excludedRecipes
+		RETURN r`,
+		map[string]interface{}{"excludedRecipes": excludedRecipes},
+		neo4j.EagerResultTransformer,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fetch recipe due to: %w", err)
 	}
 
-	return recipes, nil
+	for i := 0; i < len(ret); i++ {
+		j := rand.Intn(len(res.Records))
+
+		recipe, err := parseResult(res.Records[j])
+		if err != nil {
+			return nil, fmt.Errorf("unable to parse result (i: %d): %w", i, err)
+		}
+
+		ret[i] = recipe
+	}
+
+	return ret, nil
 }
 
-func generateMenu(recipes []*models.Recipe, count int, r *rand.Rand) []*models.Recipe {
-	// shuffle recipes to add variety
-	r.Shuffle(len(recipes), func(a, b int) { recipes[a], recipes[b] = recipes[b], recipes[a] })
-
-	menu := []*models.Recipe{}
-
-	for i := 0; i < count; i++ {
-		menu = append(menu, recipes[0])
-
-		// remove already selected recipie
-		recipes = recipes[1:]
+func parseResult(r *db.Record) (*models.Recipe, error) {
+	node, _, err := neo4j.GetRecordValue[neo4j.Node](r, "r")
+	if err != nil {
+		return nil, fmt.Errorf("unable to fetch node: %w", err)
 	}
 
-	return menu
+	code, err := neo4j.GetProperty[string](node, "code")
+	if err != nil {
+		return nil, fmt.Errorf("unable to fetch code from %w", err)
+	}
+	name, err := neo4j.GetProperty[string](node, "name")
+	if err != nil {
+		return nil, fmt.Errorf("unable to fetch name from %w", err)
+	}
+	source, err := neo4j.GetProperty[string](node, "source")
+	if err != nil {
+		return nil, fmt.Errorf("unable to fetch source from %w", err)
+	}
+
+	sourceUrl, err := url.Parse(source)
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse %s as a URL: %w", source, err)
+	}
+
+	return &models.Recipe{Code: code, Name: name, Source: sourceUrl}, nil
 }
 
-func prettyPrintMenu(m []*models.Recipe) {
-	data := [][]string{}
-
-	for _, recipe := range m {
-		data = append(data, []string{recipe.Name})
+func collectCodes(recipes []*models.Recipe) []string {
+	ret := []string{}
+	for _, r := range recipes {
+		ret = append(ret, r.Code)
 	}
 
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Menu"})
-	table.SetRowSeparator("-")
-
-	for _, v := range data {
-		table.Append(v)
-	}
-	table.Render()
+	return ret
 }
