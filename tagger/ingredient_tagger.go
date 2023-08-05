@@ -72,6 +72,7 @@ var ingredientTagRules = []ingredientTagRule{
 	{Condition: regexp.MustCompile(`green\s*bean`), Tag: models.VEGETABLE},
 	{Condition: regexp.MustCompile("mushroom"), Tag: models.VEGETABLE},
 	{Condition: regexp.MustCompile("pea"), Tag: models.VEGETABLE},
+	{Condition: regexp.MustCompile("potato"), Tag: models.VEGETABLE},
 	{Condition: regexp.MustCompile("spinach"), Tag: models.VEGETABLE},
 }
 

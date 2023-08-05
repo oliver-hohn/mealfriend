@@ -14,4 +14,7 @@ require (
 	golang.org/x/net v0.0.0-20210503060351-7fd8e65b6420 // indirect
 )
 
-require golang.org/x/text v0.3.7
+require (
+	github.com/neo4j/neo4j-go-driver/v5 v5.11.0
+	golang.org/x/text v0.3.7
+)
