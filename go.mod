@@ -23,6 +23,9 @@ require (
 
 require (
 	github.com/golang/protobuf v1.5.3 // indirect
+	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.0.0-rc.5
+	go.uber.org/multierr v1.11.0 // indirect
+	go.uber.org/zap v1.25.0
 	golang.org/x/sys v0.7.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230525234030-28d5490b6b19 // indirect
 )
