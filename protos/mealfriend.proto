@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+option go_package = "github.com/oliver-hohn/mealfriend/protos";
+
+package mealfriend;
+
+service Mealfriend {
+	rpc GetMealPlan(GetMealPlanRequest) returns (GetMealPlanResponse) {}
+
+	rpc Scrape(ScrapeRequest) returns (ScrapeResponse) {}
+}
+
+message GetMealPlanRequest {
+	map<string, int32> requirements = 1;
+}
+
+message GetMealPlanResponse {
+	repeated Recipe recipes = 1;
+}
+
+message ScrapeRequest {
+	string url = 1;
+}
+
+message ScrapeResponse {
+	Recipe recipe = 1;
+}
+
+enum Tag {
+	TAG_UNSPECIFIED = 0;
+	TAG_BEEF = 1;
+	TAG_DAIRY = 2;
+	TAG_EGG = 3;
+	TAG_FISH = 4;
+	TAG_FRUIT = 5;
+	TAG_GRAIN = 6;
+	TAG_LEGUMES = 7;
+	TAG_PASTA = 8;
+	TAG_PORK = 9;
+	TAG_POULTRY = 10;
+	TAG_SHELLFISH = 11;
+	TAG_VEGETABLE = 12;
+}
+
+message Recipe {
+	string code = 1;
+	string name = 2;
+	string source = 3;
+
+	repeated string ingredients = 4;
+	repeated Tag tags = 5;
+}

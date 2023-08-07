@@ -14,6 +14,7 @@ import (
 
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/oliver-hohn/mealfriend/envs"
+	"github.com/oliver-hohn/mealfriend/graph"
 	"github.com/oliver-hohn/mealfriend/helpers"
 	"github.com/oliver-hohn/mealfriend/models"
 	"github.com/oliver-hohn/mealfriend/scrapers"
@@ -48,12 +49,16 @@ func main() {
 		log.Fatalf("unable to clear graph: %v", err)
 	}
 
+	if err := createGraphConstraints(ctx, driver); err != nil {
+		log.Fatalf("unable to create constraints for graph: %v", err)
+	}
+
 	if err := seedTags(ctx, driver); err != nil {
 		log.Fatalf("unable to seed tags: %v", err)
 	}
 
 	for _, r := range recipes {
-		if err := saveRecipe(ctx, driver, r); err != nil {
+		if err := graph.SaveRecipe(ctx, driver, r); err != nil {
 			log.Fatalf("unable to save %s: %v", r.Code, err)
 		}
 	}
@@ -129,6 +134,36 @@ func clearGraph(ctx context.Context, driver neo4j.DriverWithContext) error {
 	return nil
 }
 
+func createGraphConstraints(ctx context.Context, driver neo4j.DriverWithContext) error {
+	_, err := neo4j.ExecuteQuery[*neo4j.EagerResult](
+		ctx,
+		driver,
+		`CREATE CONSTRAINT unique_recipe_codes IF NOT EXISTS
+		FOR (r:Recipe)
+		REQUIRE r.code IS NODE UNIQUE`,
+		map[string]interface{}{},
+		neo4j.EagerResultTransformer,
+	)
+	if err != nil {
+		return fmt.Errorf("unable to create recipe: %w", err)
+	}
+
+	_, err = neo4j.ExecuteQuery[*neo4j.EagerResult](
+		ctx,
+		driver,
+		`CREATE CONSTRAINT unique_recipe_source IF NOT EXISTS
+		FOR (r:Recipe)
+		REQUIRE r.source IS NODE UNIQUE`,
+		map[string]interface{}{},
+		neo4j.EagerResultTransformer,
+	)
+	if err != nil {
+		return fmt.Errorf("unable to create recipe: %w", err)
+	}
+
+	return nil
+}
+
 func seedTags(ctx context.Context, driver neo4j.DriverWithContext) error {
 	var query bytes.Buffer
 	params := map[string]interface{}{}
@@ -147,39 +182,6 @@ func seedTags(ctx context.Context, driver neo4j.DriverWithContext) error {
 	)
 	if err != nil {
 		return fmt.Errorf("unable to create recipe: %w", err)
-	}
-
-	return nil
-}
-
-func saveRecipe(ctx context.Context, driver neo4j.DriverWithContext, r *models.Recipe) error {
-	_, err := neo4j.ExecuteQuery[*neo4j.EagerResult](
-		ctx,
-		driver,
-		`create (r:Recipe {name: $name, code: $code, source: $source}) return r`,
-		map[string]interface{}{"name": r.Name, "code": r.Code, "source": r.Source.String()},
-		neo4j.EagerResultTransformer,
-	)
-	if err != nil {
-		return fmt.Errorf("unable to create recipe: %w", err)
-	}
-
-	for _, t := range r.Tags {
-		fmt.Printf("creating tag: %s\n", t)
-		_, err = neo4j.ExecuteQuery[*neo4j.EagerResult](
-			ctx,
-			driver,
-			`match (r:Recipe {code: $code})
-			 match (t:Tag {value: $tag})
-			 create (r)-[:tagged_as]->(t)
-			`,
-			map[string]interface{}{"code": r.Code, "tag": t},
-			neo4j.EagerResultTransformer,
-		)
-
-		if err != nil {
-			return fmt.Errorf("unable to link tags: %w", err)
-		}
 	}
 
 	return nil

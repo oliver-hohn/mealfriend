@@ -15,5 +15,8 @@
 # Air (Go hot-reloader) helpers
 tmp/*
 
+# Delve (Go debugger) auto-generated helper binaries
+__debug_*
+
 training/data/*
 !training/data/.keep
