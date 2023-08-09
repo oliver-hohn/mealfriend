@@ -44,8 +44,8 @@
    ```sh
    bin/docker_run go run cmd/scrape/main.go --input_url=RECIPE_URL
    ```
-  _To store the recipe, use the `--store=1` option_:
-  ```sh
+   _To store the recipe, use the `--store=1` option_:
+   ```sh
    bin/docker_run go run cmd/scrape/main.go --store=1 --input_url=RECIPE_URL
    ```
 
