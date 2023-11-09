@@ -20,3 +20,6 @@ __debug_*
 
 training/data/*
 !training/data/.keep
+
+node_modules
+frontend/dist/*

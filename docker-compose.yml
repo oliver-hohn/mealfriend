@@ -18,10 +18,19 @@ services:
       - .:/app
       - godeps:/go/pkg/mod/cache
 
+  envoy:
+    image: envoyproxy/envoy:v1.28-latest
+    volumes:
+      - ./config/envoy.yaml:/etc/envoy/envoy.yaml
+    ports:
+      - "8080:8080"
+    depends_on:
+      - app
+
   neo4j:
     environment:
       NEO4J_AUTH: neo4j/your_password
-    image: neo4j:5.10
+    image: neo4j:5.13
     ports:
       - "7474:7474"
       - "7687:7687"
