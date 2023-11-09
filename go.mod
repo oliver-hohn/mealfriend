@@ -17,7 +17,7 @@ require (
 require (
 	github.com/neo4j/neo4j-go-driver/v5 v5.11.0
 	golang.org/x/text v0.9.0
-	google.golang.org/grpc v1.57.0
+	google.golang.org/grpc v1.57.1
 	google.golang.org/protobuf v1.30.0
 )
 
