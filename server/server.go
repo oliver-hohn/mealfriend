@@ -19,6 +19,9 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
+
+	"google.golang.org/grpc/health"
+	healthgrpc "google.golang.org/grpc/health/grpc_health_v1"
 )
 
 type mealfriendServer struct {
@@ -187,6 +190,8 @@ func main() {
 			logging.UnaryServerInterceptor(InterceptorLogger(logger), opts...),
 		),
 	)
+	healthcheck := health.NewServer()
+	healthgrpc.RegisterHealthServer(s, healthcheck)
 	pb.RegisterMealfriendServer(s, &mealfriendServer{driver: driver})
 	reflection.Register(s)
 
