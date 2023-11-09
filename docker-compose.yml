@@ -17,11 +17,27 @@ services:
     volumes:
       - .:/app
       - godeps:/go/pkg/mod/cache
+    healthcheck:
+      test: /go/bin/grpc-health-probe -addr=localhost:50051
+      interval: 5s
+      timeout: 10s
+      retries: 20
+      start_period: 3s
+
+  envoy:
+    image: envoyproxy/envoy:v1.28-latest
+    volumes:
+      - ./config/envoy.yaml:/etc/envoy/envoy.yaml
+    ports:
+      - "8080:8080"
+    depends_on:
+      app:
+        condition: service_healthy
 
   neo4j:
     environment:
       NEO4J_AUTH: neo4j/your_password
-    image: neo4j:5.10
+    image: neo4j:5.13
     ports:
       - "7474:7474"
       - "7687:7687"

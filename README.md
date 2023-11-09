@@ -55,12 +55,35 @@
    1. Connect to: `bolt://localhost:7687`, grab the username and password from docker-compose.yml
 
 ## Re-generating the protos
+1. Install `protobuf` and `protoc-gen-grpc-web`:
+   ```
+   brew install protobuf
+   brew install protoc-gen-grpc-web
+   npm i -g protoc-gen-js
+   ```
 1. Run:
    ```sh
    protoc --go_out=. --go_opt=paths=source_relative \
       --go-grpc_out=. --go-grpc_opt=paths=source_relative \
+      --js_out=import_style=commonjs:./frontend \
+      --grpc-web_out=import_style=commonjs,mode=grpcwebtext:./frontend \
       protos/mealfriend.proto
    ```
+
+## gRPC-web
+1. Start the container:
+   ```
+   docker-compose build
+   ```
+1. In a separate console, run:
+   ```
+   cd frontend/
+   npm install
+   npx webpack ./client.js
+
+   python3 -m http.server 8081
+   ```
+1. Go to: `localhost:8081`, and open the console. You should see successful requests to the gRPC server.
 
 ## Debug
 1. Run:
