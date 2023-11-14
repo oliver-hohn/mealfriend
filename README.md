@@ -59,31 +59,28 @@
    ```
    brew install protobuf
    brew install protoc-gen-grpc-web
-   npm i -g protoc-gen-js
+   npm i -g ts-protoc-gen
    ```
 1. Run:
    ```sh
    protoc --go_out=. --go_opt=paths=source_relative \
       --go-grpc_out=. --go-grpc_opt=paths=source_relative \
-      --js_out=import_style=commonjs:./frontend \
-      --grpc-web_out=import_style=commonjs,mode=grpcwebtext:./frontend \
+      --js_out=import_style=commonjs,binary:./frontend/src \
+      --ts_out=service=grpc-web:./frontend/src \
       protos/mealfriend.proto
    ```
 
 ## gRPC-web
 1. Start the container:
    ```
-   docker-compose build
+   docker-compose up
    ```
 1. In a separate console, run:
    ```
    cd frontend/
-   npm install
-   npx webpack ./client.js
-
-   python3 -m http.server 8081
+   npm run dev
    ```
-1. Go to: `localhost:8081`, and open the console. You should see successful requests to the gRPC server.
+1. Go to: `localhost:3000`, and open the console. You should see successful requests to the gRPC server.
 
 ## Debug
 1. Run:
