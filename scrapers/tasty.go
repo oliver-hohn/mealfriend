@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/oliver-hohn/mealfriend/models"
@@ -52,5 +54,45 @@ func (s *TastyScraper) Run(u *url.URL) (*models.Recipe, error) {
 		ingredients = append(ingredients, s.Text())
 	})
 
-	return utils.NewRecipe(recipeName, ingredients, u), nil
+	r := utils.NewRecipe(recipeName, ingredients, u)
+
+	cookTime, err := s.extractCookTime(doc)
+	if err != nil {
+		return nil, fmt.Errorf("unable to extract cook time: %w", err)
+	}
+	r.CookTime = cookTime
+
+	return r, nil
+}
+
+func (s *TastyScraper) extractCookTime(doc *goquery.Document) (time.Duration, error) {
+	// Tasty does not provide a "total/cook time", so instead calculate it from the times
+	// in the instructions.
+	totalCookTime := time.Duration(0)
+
+	var err error
+	doc.Find(".prep-steps > li").EachWithBreak(func(i int, s *goquery.Selection) bool {
+		text := strings.TrimSpace(s.Text())
+		if len(text) == 0 {
+			return true
+		}
+
+		d, durErr := utils.NewDuration(text)
+		if durErr != nil {
+			// Ignore NoDurationErrors, as they are returned when the instruction step does not
+			// have a duration
+			if _, ok := durErr.(*utils.NoDurationError); ok {
+				return true
+			}
+
+			err = fmt.Errorf("unable to parse duration in instruction: \"%s\"; due to: %w", text, err)
+			return false
+		}
+
+		totalCookTime += d
+
+		return true
+	})
+
+	return totalCookTime, err
 }

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/oliver-hohn/mealfriend/models"
@@ -53,5 +55,20 @@ func (s *CafeDelitesScraper) Run(u *url.URL) (*models.Recipe, error) {
 		ingredients = append(ingredients, s.Text())
 	})
 
-	return utils.NewRecipe(recipeName, ingredients, u), nil
+	r := utils.NewRecipe(recipeName, ingredients, u)
+
+	cookTime, err := s.extractCookTime(doc)
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse cook time: %w", err)
+	}
+	r.CookTime = cookTime
+
+	return r, nil
+}
+
+func (s *CafeDelitesScraper) extractCookTime(doc *goquery.Document) (time.Duration, error) {
+	cookTimes := doc.Find(".wprm-recipe-total-time-container > .wprm-recipe-time > .wprm-recipe-details").Map(func(i int, s *goquery.Selection) string {
+		return s.Text()
+	})
+	return utils.NewDuration(strings.Join(cookTimes, " "))
 }
