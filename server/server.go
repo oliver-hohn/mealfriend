@@ -19,6 +19,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/durationpb"
 
 	"google.golang.org/grpc/health"
 	healthgrpc "google.golang.org/grpc/health/grpc_health_v1"
@@ -94,6 +95,7 @@ func toProto(r *models.Recipe) *pb.Recipe {
 		Source:      r.Source.String(),
 		Ingredients: r.Ingredients,
 		Tags:        tags,
+		CookTime:    &durationpb.Duration{Seconds: int64(r.CookTime.Seconds())},
 	}
 }
 

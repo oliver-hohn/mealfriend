@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/oliver-hohn/mealfriend/models"
@@ -57,5 +58,30 @@ func (s *DelishScraper) Run(u *url.URL) (*models.Recipe, error) {
 		ingredients = append(ingredients, s.Text())
 	})
 
-	return utils.NewRecipe(recipeName, ingredients, u), nil
+	r := utils.NewRecipe(recipeName, ingredients, u)
+
+	cookTime, err := s.extractCookTime(doc)
+	if err != nil {
+		return nil, fmt.Errorf("unable to extract cook time: %w", err)
+	}
+	r.CookTime = cookTime
+
+	return r, nil
+}
+
+func (s *DelishScraper) extractCookTime(doc *goquery.Document) (time.Duration, error) {
+	var totalTimeNode *goquery.Selection
+	doc.Find("dt").Each(func(i int, s *goquery.Selection) {
+		if strings.TrimSpace(strings.ToLower(s.Text())) == "total time:" {
+			totalTimeNode = s
+		}
+	})
+	if totalTimeNode == nil {
+		return -1, fmt.Errorf("unable to find total time HTML element")
+	}
+
+	cookTimes := totalTimeNode.Siblings().Map(func(i int, s *goquery.Selection) string {
+		return s.Text()
+	})
+	return utils.NewDuration(strings.Join(cookTimes, " "))
 }

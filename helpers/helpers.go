@@ -10,6 +10,7 @@ func PrettyPrintRecipe(r *models.Recipe) {
 	fmt.Printf("Title: %s\n", r.Name)
 	fmt.Printf("Source: %s\n", r.Source.String())
 	fmt.Printf("Tags: %v\n", r.Tags)
+	fmt.Printf("Cook time: %s\n", r.CookTime.String())
 
 	fmt.Println("Ingredients:")
 	for _, i := range r.Ingredients {
