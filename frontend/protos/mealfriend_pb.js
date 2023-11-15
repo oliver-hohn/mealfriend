@@ -21,6 +21,8 @@ var global =
     (function () { return this; }).call(null) ||
     Function('return this')();
 
+var google_protobuf_duration_pb = require('google-protobuf/google/protobuf/duration_pb.js');
+goog.object.extend(proto, google_protobuf_duration_pb);
 goog.exportSymbol('proto.mealfriend.GetMealPlanRequest', null, global);
 goog.exportSymbol('proto.mealfriend.GetMealPlanResponse', null, global);
 goog.exportSymbol('proto.mealfriend.Recipe', null, global);
@@ -750,7 +752,8 @@ proto.mealfriend.Recipe.toObject = function(includeInstance, msg) {
     name: jspb.Message.getFieldWithDefault(msg, 2, ""),
     source: jspb.Message.getFieldWithDefault(msg, 3, ""),
     ingredientsList: (f = jspb.Message.getRepeatedField(msg, 4)) == null ? undefined : f,
-    tagsList: (f = jspb.Message.getRepeatedField(msg, 5)) == null ? undefined : f
+    tagsList: (f = jspb.Message.getRepeatedField(msg, 5)) == null ? undefined : f,
+    cookTime: (f = msg.getCookTime()) && google_protobuf_duration_pb.Duration.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -808,6 +811,11 @@ proto.mealfriend.Recipe.deserializeBinaryFromReader = function(msg, reader) {
       for (var i = 0; i < values.length; i++) {
         msg.addTags(values[i]);
       }
+      break;
+    case 6:
+      var value = new google_protobuf_duration_pb.Duration;
+      reader.readMessage(value,google_protobuf_duration_pb.Duration.deserializeBinaryFromReader);
+      msg.setCookTime(value);
       break;
     default:
       reader.skipField();
@@ -871,6 +879,14 @@ proto.mealfriend.Recipe.serializeBinaryToWriter = function(message, writer) {
     writer.writePackedEnum(
       5,
       f
+    );
+  }
+  f = message.getCookTime();
+  if (f != null) {
+    writer.writeMessage(
+      6,
+      f,
+      google_protobuf_duration_pb.Duration.serializeBinaryToWriter
     );
   }
 };
@@ -1001,6 +1017,43 @@ proto.mealfriend.Recipe.prototype.addTags = function(value, opt_index) {
  */
 proto.mealfriend.Recipe.prototype.clearTagsList = function() {
   return this.setTagsList([]);
+};
+
+
+/**
+ * optional google.protobuf.Duration cook_time = 6;
+ * @return {?proto.google.protobuf.Duration}
+ */
+proto.mealfriend.Recipe.prototype.getCookTime = function() {
+  return /** @type{?proto.google.protobuf.Duration} */ (
+    jspb.Message.getWrapperField(this, google_protobuf_duration_pb.Duration, 6));
+};
+
+
+/**
+ * @param {?proto.google.protobuf.Duration|undefined} value
+ * @return {!proto.mealfriend.Recipe} returns this
+*/
+proto.mealfriend.Recipe.prototype.setCookTime = function(value) {
+  return jspb.Message.setWrapperField(this, 6, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.mealfriend.Recipe} returns this
+ */
+proto.mealfriend.Recipe.prototype.clearCookTime = function() {
+  return this.setCookTime(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.mealfriend.Recipe.prototype.hasCookTime = function() {
+  return jspb.Message.getField(this, 6) != null;
 };
 
 

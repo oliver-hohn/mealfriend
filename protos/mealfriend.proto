@@ -4,6 +4,8 @@ option go_package = "github.com/oliver-hohn/mealfriend/protos";
 
 package mealfriend;
 
+import "google/protobuf/duration.proto";
+
 service Mealfriend {
 	rpc GetMealPlan(GetMealPlanRequest) returns (GetMealPlanResponse) {}
 
@@ -49,4 +51,6 @@ message Recipe {
 
 	repeated string ingredients = 4;
 	repeated Tag tags = 5;
+
+	google.protobuf.Duration cook_time = 6;
 }

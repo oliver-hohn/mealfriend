@@ -19,6 +19,8 @@
 const grpc = {};
 grpc.web = require('grpc-web');
 
+
+var google_protobuf_duration_pb = require('google-protobuf/google/protobuf/duration_pb.js')
 const proto = {};
 proto.mealfriend = require('./mealfriend_pb.js');
 
