@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/url"
+	"time"
 
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j/db"
@@ -17,8 +18,8 @@ func SaveRecipe(ctx context.Context, driver neo4j.DriverWithContext, r *models.R
 	_, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
 		_, err := tx.Run(
 			ctx,
-			`create (r:Recipe {name: $name, code: $code, source: $source, ingredients: $ingredients}) return r`,
-			map[string]interface{}{"name": r.Name, "code": r.Code, "source": r.Source.String(), "ingredients": r.Ingredients},
+			`create (r:Recipe {name: $name, code: $code, source: $source, ingredients: $ingredients, cookTime: $cookTime}) return r`,
+			map[string]interface{}{"name": r.Name, "code": r.Code, "source": r.Source.String(), "ingredients": r.Ingredients, "cookTime": r.CookTime.String()},
 		)
 		if err != nil {
 			return nil, fmt.Errorf("unable to create recipe: %w", err)
@@ -117,5 +118,14 @@ func parseResult(r *db.Record) (*models.Recipe, error) {
 		return nil, fmt.Errorf("unable to parse %s as a URL: %w", source, err)
 	}
 
-	return &models.Recipe{Code: code, Name: name, Source: sourceUrl}, nil
+	cookTimeStr, err := neo4j.GetProperty[string](node, "cookTime")
+	if err != nil {
+		return nil, fmt.Errorf("unable to fetch cook time from %w", err)
+	}
+	cookTime, err := time.ParseDuration(cookTimeStr)
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse: %s, back into a duration: %w", cookTimeStr, err)
+	}
+
+	return &models.Recipe{Code: code, Name: name, Source: sourceUrl, CookTime: cookTime}, nil
 }

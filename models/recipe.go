@@ -2,6 +2,7 @@ package models
 
 import (
 	"net/url"
+	"time"
 )
 
 type Tag string
@@ -46,4 +47,6 @@ type Recipe struct {
 
 	Ingredients []string
 	Tags        []Tag
+
+	CookTime time.Duration
 }
