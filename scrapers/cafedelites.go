@@ -1,6 +1,7 @@
 package scrapers
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -63,6 +64,12 @@ func (s *CafeDelitesScraper) Run(u *url.URL) (*models.Recipe, error) {
 	}
 	r.CookTime = cookTime
 
+	imageURL, err := s.extractImageURL(doc)
+	if err != nil {
+		return nil, fmt.Errorf("unable to extract image from recipe page: %w", err)
+	}
+	r.Image = imageURL
+
 	return r, nil
 }
 
@@ -71,4 +78,36 @@ func (s *CafeDelitesScraper) extractCookTime(doc *goquery.Document) (time.Durati
 		return s.Text()
 	})
 	return utils.NewDuration(strings.Join(cookTimes, " "))
+}
+
+func (s *CafeDelitesScraper) extractImageURL(doc *goquery.Document) (*url.URL, error) {
+	// In all seen cases, the first img in the HTML that is centered and large best
+	// represents the recipe.
+	var image *goquery.Selection
+	doc.Find("img").EachWithBreak(func(i int, s *goquery.Selection) bool {
+		classes, exists := s.Attr("class")
+		if exists && strings.Contains(classes, "aligncenter") && strings.Contains(classes, "size-full") {
+			// Break out the loop early once we find the first selection that matches
+			image = s
+			return false
+		}
+
+		return true
+	})
+
+	if image == nil {
+		return nil, fmt.Errorf("no image found")
+	}
+
+	src, exists := image.Attr("data-lazy-src")
+	if !exists {
+		return nil, errors.New("no src attribute found on image")
+	}
+
+	u, err := url.Parse(src)
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse image src: %s, into a URL: %w", src, err)
+	}
+
+	return u, nil
 }
