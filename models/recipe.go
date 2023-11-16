@@ -52,6 +52,13 @@ type Recipe struct {
 	Image    *url.URL
 }
 
+func (r *Recipe) CookTimeStr() string {
+	if r.CookTime == 0 {
+		return ""
+	}
+	return r.CookTime.String()
+}
+
 func (r *Recipe) ImageURL() string {
 	if r.Image == nil {
 		return ""
