@@ -96,6 +96,7 @@ func toProto(r *models.Recipe) *pb.Recipe {
 		Ingredients: r.Ingredients,
 		Tags:        tags,
 		CookTime:    &durationpb.Duration{Seconds: int64(r.CookTime.Seconds())},
+		ImageUrl:    r.ImageURL(),
 	}
 }
 

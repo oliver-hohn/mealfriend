@@ -18,8 +18,15 @@ func SaveRecipe(ctx context.Context, driver neo4j.DriverWithContext, r *models.R
 	_, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
 		_, err := tx.Run(
 			ctx,
-			`create (r:Recipe {name: $name, code: $code, source: $source, ingredients: $ingredients, cookTime: $cookTime}) return r`,
-			map[string]interface{}{"name": r.Name, "code": r.Code, "source": r.Source.String(), "ingredients": r.Ingredients, "cookTime": r.CookTime.String()},
+			`create (r:Recipe {name: $name, code: $code, source: $source, ingredients: $ingredients, cookTime: $cookTime, imageURL: $imageURL}) return r`,
+			map[string]interface{}{
+				"name":        r.Name,
+				"code":        r.Code,
+				"source":      r.Source.String(),
+				"ingredients": r.Ingredients,
+				"cookTime":    r.CookTimeStr(),
+				"imageURL":    r.ImageURL(),
+			},
 		)
 		if err != nil {
 			return nil, fmt.Errorf("unable to create recipe: %w", err)
@@ -108,12 +115,12 @@ func parseResult(r *db.Record) (*models.Recipe, error) {
 	if err != nil {
 		return nil, fmt.Errorf("unable to fetch name from %w", err)
 	}
+
 	source, err := neo4j.GetProperty[string](node, "source")
 	if err != nil {
 		return nil, fmt.Errorf("unable to fetch source from %w", err)
 	}
-
-	sourceUrl, err := url.Parse(source)
+	sourceURL, err := url.Parse(source)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse %s as a URL: %w", source, err)
 	}
@@ -127,5 +134,14 @@ func parseResult(r *db.Record) (*models.Recipe, error) {
 		return nil, fmt.Errorf("unable to parse: %s, back into a duration: %w", cookTimeStr, err)
 	}
 
-	return &models.Recipe{Code: code, Name: name, Source: sourceUrl, CookTime: cookTime}, nil
+	rawImageURL, err := neo4j.GetProperty[string](node, "imageURL")
+	if err != nil {
+		return nil, fmt.Errorf("unable to fetch image URL from %w", err)
+	}
+	imageURL, err := url.Parse(rawImageURL)
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse %s as a URL: %w", imageURL, err)
+	}
+
+	return &models.Recipe{Code: code, Name: name, Source: sourceURL, CookTime: cookTime, Image: imageURL}, nil
 }

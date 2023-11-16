@@ -1,6 +1,7 @@
 package scrapers
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -62,6 +63,12 @@ func (s *TastyScraper) Run(u *url.URL) (*models.Recipe, error) {
 	}
 	r.CookTime = cookTime
 
+	imageURL, err := s.extractImageURL(recipeName)
+	if err != nil {
+		return nil, fmt.Errorf("unable to extract image URL: %w", err)
+	}
+	r.Image = imageURL
+
 	return r, nil
 }
 
@@ -95,4 +102,44 @@ func (s *TastyScraper) extractCookTime(doc *goquery.Document) (time.Duration, er
 	})
 
 	return totalCookTime, err
+}
+
+func (s *TastyScraper) extractImageURL(recipeName string) (*url.URL, error) {
+	// Query tasty to find the image for the recipe in the search response (it is not present on the recipe
+	// page)
+	searchURL := fmt.Sprintf("https://%s/search?q=%s", TASTY_HOST, url.QueryEscape(recipeName))
+
+	res, err := s.httpClient.Get(searchURL)
+	if err != nil {
+		return nil, fmt.Errorf("unable to fetch %s: %w", searchURL, err)
+	}
+	defer res.Body.Close()
+	if res.StatusCode != 200 {
+		return nil, fmt.Errorf("non 200 status code received: %d", res.StatusCode)
+	}
+
+	doc, err := goquery.NewDocumentFromReader(res.Body)
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse HTML in response: %w", err)
+	}
+
+	image := doc.Find(".feed__items > li img").First()
+	if image == nil {
+		return nil, fmt.Errorf("no image found")
+	}
+
+	src, exists := image.Attr("src")
+	if !exists {
+		return nil, errors.New("no src attribute found on image")
+	}
+
+	u, err := url.Parse(src)
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse image src: %s, into a URL: %w", src, err)
+	}
+
+	// Clear the query params to get a non-resized image URL
+	u.RawQuery = ""
+
+	return u, nil
 }

@@ -1,6 +1,7 @@
 package scrapers
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -66,6 +67,12 @@ func (s *DelishScraper) Run(u *url.URL) (*models.Recipe, error) {
 	}
 	r.CookTime = cookTime
 
+	imageURL, err := s.extractImageURL(doc)
+	if err != nil {
+		return nil, fmt.Errorf("unable to extract image URL: %w", err)
+	}
+	r.Image = imageURL
+
 	return r, nil
 }
 
@@ -84,4 +91,27 @@ func (s *DelishScraper) extractCookTime(doc *goquery.Document) (time.Duration, e
 		return s.Text()
 	})
 	return utils.NewDuration(strings.Join(cookTimes, " "))
+}
+
+func (s *DelishScraper) extractImageURL(doc *goquery.Document) (*url.URL, error) {
+	// Annoyingly there are no more readable class names that can be used to identify the image node
+	image := doc.Find(".ewcw41w0 > .exi4f7p0").First()
+	if image == nil {
+		return nil, fmt.Errorf("no image found")
+	}
+
+	src, exists := image.Attr("src")
+	if !exists {
+		return nil, errors.New("no src attribute found on image")
+	}
+
+	u, err := url.Parse(src)
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse image src: %s, into a URL: %w", src, err)
+	}
+
+	// Clear the query params to get a non-resized image URL
+	u.RawQuery = ""
+
+	return u, nil
 }

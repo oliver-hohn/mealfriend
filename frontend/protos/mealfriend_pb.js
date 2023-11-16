@@ -753,7 +753,8 @@ proto.mealfriend.Recipe.toObject = function(includeInstance, msg) {
     source: jspb.Message.getFieldWithDefault(msg, 3, ""),
     ingredientsList: (f = jspb.Message.getRepeatedField(msg, 4)) == null ? undefined : f,
     tagsList: (f = jspb.Message.getRepeatedField(msg, 5)) == null ? undefined : f,
-    cookTime: (f = msg.getCookTime()) && google_protobuf_duration_pb.Duration.toObject(includeInstance, f)
+    cookTime: (f = msg.getCookTime()) && google_protobuf_duration_pb.Duration.toObject(includeInstance, f),
+    imageUrl: jspb.Message.getFieldWithDefault(msg, 7, "")
   };
 
   if (includeInstance) {
@@ -816,6 +817,10 @@ proto.mealfriend.Recipe.deserializeBinaryFromReader = function(msg, reader) {
       var value = new google_protobuf_duration_pb.Duration;
       reader.readMessage(value,google_protobuf_duration_pb.Duration.deserializeBinaryFromReader);
       msg.setCookTime(value);
+      break;
+    case 7:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setImageUrl(value);
       break;
     default:
       reader.skipField();
@@ -887,6 +892,13 @@ proto.mealfriend.Recipe.serializeBinaryToWriter = function(message, writer) {
       6,
       f,
       google_protobuf_duration_pb.Duration.serializeBinaryToWriter
+    );
+  }
+  f = message.getImageUrl();
+  if (f.length > 0) {
+    writer.writeString(
+      7,
+      f
     );
   }
 };
@@ -1054,6 +1066,24 @@ proto.mealfriend.Recipe.prototype.clearCookTime = function() {
  */
 proto.mealfriend.Recipe.prototype.hasCookTime = function() {
   return jspb.Message.getField(this, 6) != null;
+};
+
+
+/**
+ * optional string image_url = 7;
+ * @return {string}
+ */
+proto.mealfriend.Recipe.prototype.getImageUrl = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 7, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.mealfriend.Recipe} returns this
+ */
+proto.mealfriend.Recipe.prototype.setImageUrl = function(value) {
+  return jspb.Message.setProto3StringField(this, 7, value);
 };
 
 

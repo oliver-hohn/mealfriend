@@ -9,6 +9,7 @@ import (
 func PrettyPrintRecipe(r *models.Recipe) {
 	fmt.Printf("Title: %s\n", r.Name)
 	fmt.Printf("Source: %s\n", r.Source.String())
+	fmt.Printf("Image: %s\n", r.ImageURL())
 	fmt.Printf("Tags: %v\n", r.Tags)
 	fmt.Printf("Cook time: %s\n", r.CookTime.String())
 

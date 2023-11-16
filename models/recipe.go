@@ -49,4 +49,19 @@ type Recipe struct {
 	Tags        []Tag
 
 	CookTime time.Duration
+	Image    *url.URL
+}
+
+func (r *Recipe) CookTimeStr() string {
+	if r.CookTime == 0 {
+		return ""
+	}
+	return r.CookTime.String()
+}
+
+func (r *Recipe) ImageURL() string {
+	if r.Image == nil {
+		return ""
+	}
+	return r.Image.String()
 }

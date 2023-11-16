@@ -53,4 +53,5 @@ message Recipe {
 	repeated Tag tags = 5;
 
 	google.protobuf.Duration cook_time = 6;
+	string image_url = 7;
 }
