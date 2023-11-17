@@ -112,6 +112,9 @@ export class Recipe extends jspb.Message {
   getCookTime(): google_protobuf_duration_pb.Duration | undefined;
   setCookTime(value?: google_protobuf_duration_pb.Duration): void;
 
+  getImageUrl(): string;
+  setImageUrl(value: string): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Recipe.AsObject;
   static toObject(includeInstance: boolean, msg: Recipe): Recipe.AsObject;
@@ -130,6 +133,7 @@ export namespace Recipe {
     ingredientsList: Array<string>,
     tagsList: Array<TagMap[keyof TagMap]>,
     cookTime?: google_protobuf_duration_pb.Duration.AsObject,
+    imageUrl: string,
   }
 }
 
