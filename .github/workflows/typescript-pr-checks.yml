@@ -1,0 +1,38 @@
+name: TypeScript PR Checks
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "frontend/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - "frontend/**"
+
+jobs:
+  typecheck-and-lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Run TypeScript type checks
+        run: |
+          cd frontend
+          npx tsc --noEmit
+
+      - name: Run ESLint
+        run: |
+          cd frontend
+          npx eslint . --ext .ts,.tsx
