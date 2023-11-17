@@ -17,27 +17,38 @@
    ```
    docker-compose up
    ```
-1. Seed a recipe:
-   ```sh
-   grpcurl -plaintext -d @ localhost:50051 mealfriend.Mealfriend/Scrape <<EOM
-   {
-      "url": "https://cafedelites.com/best-churros-recipe/"
-   }
+1. In a separate terminal, run:
    ```
-1. Plan meals:
-   ```sh
-   grpcurl -plaintext -d @ localhost:50051 mealfriend.Mealfriend/GetMealPlan <<EOM
-   {
-      "requirements": {
-         "beef": 1,
-         "poultry": 1,
-         "fish": 2,
-         "unspecified": 1
-      }
-   }
-   EOM
+   cd frontend/
+
+   npm install
+   npm run dev
    ```
-   _`unspecified` acts as a "filler" for any recipe (i.e. no requirement)._
+1. Go to: `http://localhost:3000`
+
+### gRPC
+Seed a recipe:
+```sh
+grpcurl -plaintext -d @ localhost:50051 mealfriend.Mealfriend/Scrape <<EOM
+{
+   "url": "https://cafedelites.com/best-churros-recipe/"
+}
+```
+
+Plan meals:
+```sh
+grpcurl -plaintext -d @ localhost:50051 mealfriend.Mealfriend/GetMealPlan <<EOM
+{
+   "requirements": {
+      "beef": 1,
+      "poultry": 1,
+      "fish": 2,
+      "unspecified": 1
+   }
+}
+EOM
+```
+_`unspecified` acts as a "filler" for any recipe (i.e. no requirement)._
 
 ### Scrape a recipe
 1. Run:
