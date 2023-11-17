@@ -1,6 +1,3 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {}
-
 // From: https://react-svgr.com/docs/next/
 module.exports = {
     webpack(config) {
